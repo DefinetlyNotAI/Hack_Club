@@ -1,0 +1,4 @@
+First one should call the DLL that gets all the low-level system info
+Second one should be the DLL
+
+Use assembly + CPP for the DLL
