@@ -72,9 +72,13 @@ class Auto:
         server.quit()
 
 
+"""
+# This is a full example usage of the EmailAutomator class in another file
 # Specify the recipient, subject, and body of the email
+from EmailAutomator import Auto
 auto = Auto()
 recipient = 'Nirt_12023@outlook.com'
 subject = 'Test Email'
 body = 'This is a test email sent using automation.'
 auto.send_email(recipient, subject, body)
+"""

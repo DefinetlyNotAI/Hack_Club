@@ -13,3 +13,8 @@ RP4B Plan
     that is called discord.webhook, it simply just includes the webhook URL, that's it
 
 You must include `config.json` in this directory
+
+In the sd card of pwngotchi: /etc/pwnagotchi/config.toml
+Edit it to allow usage of plugins, by adding or editing this line:
+`main.custom_plugins = "/usr/local/share/pwnagotchi/custom-plugins/"`
+Then put the rp0w.py script in /usr/local/share/pwnagotchi/custom-plugins/ in the SD card
