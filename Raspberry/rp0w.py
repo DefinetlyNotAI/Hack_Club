@@ -1,8 +1,9 @@
+import requests
+import colorlog
 import json
 import os
-import requests
+import pwnagotchi.plugins as plugins
 from pathlib import Path
-import colorlog
 from datetime import datetime
 
 # Configure colorlog for logging messages with colors
