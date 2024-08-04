@@ -1,9 +1,0 @@
-C:\Users\Hp\AppData\Local\bin\NASM -f win32 FILE.asm
-C:\Users\Hp\AppData\Local\GoLink\GoLink.exe /console /entry _start FILE.obj REQUIRED_LIB.lib
-
-To successfully build the dll
-g++ wmi_query.cpp -shared -o wmi_query.dll -lwbemuuid -lole32 -loleaut32 -lrpcrt4
-Default: g++ CPP_FILE.cpp -shared -o NAME.dll -REQUIRED_LIB
-
-(Place on your env variables: C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\CHANGE_TO_VERSION_NUMBER\bin\Hostx64\x64\cl.exe)
-I used to build the EXE that will use the DLL: g++ -o call_dll_and_save_info call_dll_and_save_info.cpp
