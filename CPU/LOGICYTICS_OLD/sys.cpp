@@ -6,7 +6,7 @@
 
 #pragma comment(lib, "wbemuuid.lib")
 
-std::wstring GetMotherboardSerial() {
+extern "C" __declspec(dllexport) std::wstring GetMotherboardSerial() {
     HRESULT hres;
 
     // Initialize COM.
@@ -53,17 +53,17 @@ std::wstring GetMotherboardSerial() {
     // Connect to WMI through the IWbemLocator::ConnectServer method
     IWbemServices *pSvc = NULL;
 
-    // Connect to the root\cimv2 namespace with the current user
     hres = pLoc->ConnectServer(
         _bstr_t(L"ROOT\\CIMV2"), // Object path of WMI namespace
         NULL,                    // User name. NULL = current user
         NULL,                    // User password. NULL = current
         0,                       // Locale. NULL indicates US English
-        NULL,                    // Security flags.
+        0,                       // Security flags. Use 0 if unsure.
         0,                       // Authority (e.g. Kerberos)
         0,                       // Context object
         &pSvc                    // pointer to IWbemServices proxy
     );
+
 
     if (FAILED(hres)) {
         std::cout << "Could not connect. Error code = 0x" << std::hex << hres << std::endl;
@@ -119,27 +119,14 @@ std::wstring GetMotherboardSerial() {
     return serialNumber;
 }
 
-
-// In SystemCoreInfo.h
-DWORD GetCPUInfo();
-
-// In SystemCoreInfo.cpp
-#include <windows.h>
-
-DWORD GetCPUInfo() {
+extern "C" __declspec(dllexport) DWORD GetCPUInfo() {
     SYSTEM_INFO sysinfo;
     GetSystemInfo(&sysinfo);
     // Example: returning processor architecture
     return sysinfo.wProcessorArchitecture;
 }
 
-// In SystemCoreInfo.h
-MEMORYSTATUSEX GetRAMInfo();
-
-// In SystemCoreInfo.cpp
-#include <windows.h>
-
-MEMORYSTATUSEX GetRAMInfo() {
+extern "C" __declspec(dllexport) MEMORYSTATUSEX GetRAMInfo() {
     MEMORYSTATUSEX memInfo;
     memInfo.dwLength = sizeof(MEMORYSTATUSEX);
     GlobalMemoryStatusEx(&memInfo);
