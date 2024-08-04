@@ -1,4 +1,9 @@
-First one should call the DLL that gets all the low-level system info
-Second one should be the DLL
+Fix the following:
+GPU Info: Not Available
+System Age: Unable to determine.
 
-Use assembly + CPP for the DLL
+The file copied should actually enter the logs, copy contents and save to txt
+
+Add error checks
+
+Make the wifi auto get the names and put them in the list
