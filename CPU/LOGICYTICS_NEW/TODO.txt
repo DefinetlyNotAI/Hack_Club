@@ -7,3 +7,6 @@ The file copied should actually enter the logs, copy contents and save to txt
 Add error checks
 
 Make the wifi auto get the names and put them in the list
+
+https://github.com/DefinetlyNotAI/Hack_Club/commit/e34add545e56720e4d168aec9a6c869ae830f239
+https://github.com/DefinetlyNotAI/Hack_Club/commit/ef6f45be51fb8efac6ce35c96414fc7736025f92
