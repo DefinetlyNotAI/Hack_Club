@@ -1,5 +1,5 @@
 Build
-    RP w0 has a pwngotchi custom build that allows the waveshare v4 e-ink display to be used.
+    RP w0 has a pwngotchi custom build that allows the wave-share v4 e-ink display to be used.
     RP 4B has kali linux OS with a custom start-up script,
 
 RPw0 Plan
@@ -10,4 +10,6 @@ RP4B Plan
     My RP4B also has a custom script that ALWAYS runs, which saves any handshake packet file, and uses
     builtin scripts to crack the handshakes and get the password key, afterwords it sends it to me via a discord webhook
     to prevent spam, the webhook url is gotten from a pre-configured file (acts like a env variable)
-    that is called discord.webhook, it simply just includes the webhook URL, thats it
+    that is called discord.webhook, it simply just includes the webhook URL, that's it
+
+You must include `config.json` in this directory
