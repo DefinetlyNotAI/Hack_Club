@@ -1,3 +1,4 @@
+To produce a object file
 C:\Users\Hp\AppData\Local\bin\NASM -f win32 FILE.asm
 C:\Users\Hp\AppData\Local\GoLink\GoLink.exe /console /entry _start FILE.obj REQUIRED_LIB.lib
 
