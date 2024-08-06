@@ -128,13 +128,34 @@ class AutoPcap(plugins.Plugin):
                 f.write(f"CRITICAL: {message} at {self.__timestamp()}\n")
 
     def __init__(self):
+        """
+        Initializes the instance with the `running` attribute set to False.
+        """
         self.running = False
 
     def on_loaded(self):
+        """
+        Initializes the AutoPcap plugin and sets the `running` attribute to True.
+        Logs a message indicating that the plugin has been loaded and is ready to run.
+
+        Parameters:
+            self (AutoPcap): The instance of the AutoPcap class.
+
+        Returns:
+            None
+        """
         self.running = True
         colorlog.info('AutoPcap plugin loaded and ready to run.')
 
     def on_handshake(self, agent, filename, access_point, client_station):
+        """
+        A function that handles the handshake process.
+        Checks if the filename ends with '.pcap' and if the AutoPcap plugin is running.
+        Logs session details, filename, access point, and client station.
+        Tries to send the pcap files to Discord using the webhook URL.
+        Logs success or failure messages accordingly.
+        If an exception occurs, logs the error and saves it to the error log file.
+        """
         if filename.endswith('.pcap') and self.running:
             colorlog.debug("Session Details: " + agent.session())
             colorlog.debug("Filename: " + filename)
@@ -150,6 +171,19 @@ class AutoPcap(plugins.Plugin):
                 self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).error(f"Error sending pcap file to Discord: {e}")
 
     def read_webhook_url(self):
+        """
+        Reads the webhook URL from the 'config.json' file.
+
+        This function attempts to open the 'config.json' file and load its contents into a dictionary. It then retrieves the value associated with the key 'webhookUrl' from the dictionary and returns it.
+
+        If the 'config.json' file is not found, a `FileNotFoundError` is raised. In this case, the function logs a critical error message using the `colorlog` module and logs the specific error using the `Log` class. The program is then terminated with a status code of 1.
+
+        Returns:
+            str: The webhook URL retrieved from the 'config.json' file.
+
+        Raises:
+            FileNotFoundError: If the 'config.json' file is not found.
+        """
         try:
             with open('config.json', 'r') as file:
                 data = json.load(file)
@@ -160,6 +194,27 @@ class AutoPcap(plugins.Plugin):
             exit(1)
 
     def send_pcap_files_to_discord(self, webhook_url):
+        """
+        Sends .pcap files found in the specified paths to a Discord webhook.
+
+        Args:
+            webhook_url (str): The URL of the Discord webhook.
+
+        Returns:
+            bool: True if all .pcap files were sent successfully, False otherwise.
+
+        Raises:
+            FileNotFoundError: If any .pcap files are not found.
+            Exception: If there is an error sending the .pcap files to Discord.
+
+        This function searches for .pcap files in the specified paths and attempts to send them to a Discord webhook. It first checks if the device is connected to the internet by attempting to fetch Google's homepage. If the device is not connected to the internet, it logs an error and returns False.
+
+        The function then iterates over each path and searches for .pcap files in the current path. For each .pcap file found, it logs the file path and attempts to send it to the Discord webhook. It reads the file content, sends it as a file attachment in a POST request to the webhook URL, and logs the response status code and any error messages.
+
+        If any error occurs during the process, it logs the error and saves it to the "Pwngotchi_Plugin_Errors.log" file.
+
+        If all .pcap files are sent successfully, it returns True.
+        """
         # Define the paths to search
         paths_to_search = [
             '.',  # Current Dir
