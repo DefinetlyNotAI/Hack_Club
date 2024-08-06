@@ -162,10 +162,15 @@ class AutoPcap(plugins.Plugin):
             colorlog.debug("Access Point: " + access_point)
             colorlog.debug("Client Station: " + client_station)
             try:
-                if self.send_pcap_files_to_discord(self.read_webhook_url()):
-                    colorlog.info("Successfully sent pcap file to Discord.")
+                link = self.read_webhook_url()
+                if link is None:
+                    colorlog.critical("No webhook URL found in config.json. Skipping sending pcap file to Discord.")
+                    self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).critical("No webhook URL found in config.json. Skipping sending pcap file to Discord.")
                 else:
-                    colorlog.error("Failed to send pcap file to Discord.")
+                    if self.send_pcap_files_to_discord(link):
+                        colorlog.info("Successfully sent pcap file to Discord.")
+                    else:
+                        colorlog.error("Failed to send pcap file to Discord.")
             except Exception as e:
                 colorlog.error(f"Error sending pcap file to Discord: {e}")
                 self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).error(f"Error sending pcap file to Discord: {e}")
@@ -191,7 +196,7 @@ class AutoPcap(plugins.Plugin):
         except FileNotFoundError as e:
             colorlog.critical(f"Error reading config.json: {e}")
             self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).critical(f"Error reading config.json: {e}")
-            exit(1)
+            return None
 
     def send_pcap_files_to_discord(self, webhook_url):
         """
