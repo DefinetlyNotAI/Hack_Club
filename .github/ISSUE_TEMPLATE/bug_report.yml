@@ -1,5 +1,5 @@
 name: Report a bug
-description: Tell us about a bug or issue you may have identified in Sumo_2024.
+description: Tell us about a bug or issue you may have identified in Hack Club.
 title: "Provide a general summary of the issue"
 labels: [bug]
 assignees: "DefinetlyNotAI"
@@ -9,9 +9,9 @@ body:
       label: Prerequisites
       description: Take a couple minutes to help our maintainers work faster.
       options:
-        - label: I have [searched](https://github.com/DefinetlyNotAI/Sumo_2024/issues?utf8=%E2%9C%93&q=is%3Aissue) for duplicate or closed issues.
+        - label: I have [searched](https://github.com/DefinetlyNotAI/Hack_Club/issues?utf8=%E2%9C%93&q=is%3Aissue) for duplicate or closed issues.
           required: true
-        - label: I have read the [contributing guidelines](https://github.com/DefinetlyNotAI/Sumo_2024/blob/main/CONTRIBUTING.md).
+        - label: I have read the [contributing guidelines](https://github.com/DefinetlyNotAI/Hack_Club/blob/main/CONTRIBUTING.md).
           required: true
         - label: I have checked that I am on the latest release, and have made sure no external modification are responsible for this bug.
           required: true
@@ -41,9 +41,9 @@ body:
         - Microsoft Edge
         - Opera
   - type: input
-    id: version
+    id: project
     attributes:
-      label: What version of Sumo_2024 are you using?
-      placeholder: "e.g., v5.1.0 or v4.5.2"
+      label: What project is the issue related to?
+      placeholder: "e.g., CPU"
     validations:
       required: true
