@@ -8,7 +8,7 @@ from datetime import datetime
 
 # Configure colorlog for logging messages with colors
 logger = colorlog.getLogger()
-logger.setLevel(colorlog.DEBUG)  # Set the log level to INFO to capture all relevant logs
+logger.setLevel(colorlog.DEBUG)
 
 handler = colorlog.StreamHandler()
 formatter = colorlog.ColoredFormatter(
