@@ -1,6 +1,7 @@
 import shutil
 from pathlib import Path
 
+
 def copy_logs_to_same_dir():
     # Determine the directory of the current script
     script_dir = Path(__file__).resolve().parent

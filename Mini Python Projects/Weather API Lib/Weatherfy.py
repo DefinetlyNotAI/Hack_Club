@@ -116,13 +116,20 @@ class Obtain:
             return None
 
     def wal(self):
+        """
+        WAL stands for Weather and Location, This is a wrapper function
+        That includes error checks, etc.
+
+        :return:
+            str/bool: False boolean if an error occurs, else returns a JSON string
+        """
         # Example usage
         result = self.__get_location_and_weather()
         if result is None:
             colorlog.error("An error occurred: While fetching weather data and the response was NULL.")
             return False
         else:
-            return result
+            return str(result)
 
 
 # Return the result, will return False if there was an error

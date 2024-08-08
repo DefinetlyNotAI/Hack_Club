@@ -2,6 +2,7 @@ import requests
 import colorlog
 import json
 import os
+import pwnagotchi
 import pwnagotchi.plugins as plugins
 from pathlib import Path
 from datetime import datetime
@@ -132,6 +133,21 @@ class AutoPcap(plugins.Plugin):
         Initializes the instance with the `running` attribute set to False.
         """
         self.running = False
+        colorlog.debug("AutoPcap plugin initialized.")
+
+    def on_internet_available(self, agent):
+        """
+        A static method that is called when internet is available.
+
+        Parameters:
+            agent (str): The agent that indicates the source of the internet availability.
+
+        Returns:
+            None
+        """
+        global tether
+        tether = True
+        colorlog.debug("Internet is available with agent: " + agent)
 
     def on_loaded(self):
         """
@@ -144,10 +160,12 @@ class AutoPcap(plugins.Plugin):
         Returns:
             None
         """
+        global tether
+        tether = False
         self.running = True
         colorlog.info('AutoPcap plugin loaded and ready to run.')
 
-    def on_handshake(self, agent, filename, access_point, client_station):
+    def on_epoch(self, agent, epoch, epoch_data):
         """
         A function that handles the handshake process.
         Checks if the filename ends with '.pcap' and if the AutoPcap plugin is running.
@@ -156,26 +174,28 @@ class AutoPcap(plugins.Plugin):
         Logs success or failure messages accordingly.
         If an exception occurs, logs the error and saves it to the error log file.
         """
-        if filename.endswith('.pcap') and self.running:
+        if self.running:
+            global fingerprint
+            fingerprint = agent.fingerprint()
             colorlog.debug("Session Details: " + agent.session())
-            colorlog.debug("Filename: " + filename)
-            colorlog.debug("Access Point: " + access_point)
-            colorlog.debug("Client Station: " + client_station)
+            colorlog.debug(f"Epoch: {epoch} with data: {epoch_data}")
+            colorlog.debug("Fingerprint: " + fingerprint)
             try:
-                link = self.read_webhook_url()
+                link = self.__read_webhook_url()
                 if link is None:
                     colorlog.critical("No webhook URL found in config.json. Skipping sending pcap file to Discord.")
                     self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).critical("No webhook URL found in config.json. Skipping sending pcap file to Discord.")
                 else:
-                    if self.send_pcap_files_to_discord(link):
+                    if tether:
+                        self.__send_pcap_files_to_discord(link)
                         colorlog.info("Successfully sent pcap file to Discord.")
                     else:
-                        colorlog.error("Failed to send pcap file to Discord.")
+                        colorlog.error("Device is not connected to the internet. Skipping sending .pcap files to Discord.")
             except Exception as e:
                 colorlog.error(f"Error sending pcap file to Discord: {e}")
                 self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).error(f"Error sending pcap file to Discord: {e}")
 
-    def read_webhook_url(self):
+    def __read_webhook_url(self):
         """
         Reads the webhook URL from the 'config.json' file.
 
@@ -198,7 +218,7 @@ class AutoPcap(plugins.Plugin):
             self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).critical(f"Error reading config.json: {e}")
             return None
 
-    def send_pcap_files_to_discord(self, webhook_url):
+    def __send_pcap_files_to_discord(self, webhook_url):
         """
         Sends .pcap files found in the specified paths to a Discord webhook.
 
@@ -228,24 +248,6 @@ class AutoPcap(plugins.Plugin):
 
         # Debug print: Starting the search for .pcap files
         colorlog.info("Starting search for .pcap files and attempting to send them to Discord via webhook...")
-
-        def is_connected_to_internet():
-            """
-            Checks if the device is connected to the internet by attempting to fetch Google's homepage.
-
-            Returns:
-                bool: True if connected, False otherwise.
-            """
-            try:
-                response = requests.get('http://www.google.com', timeout=5)
-                return response.status_code == 200
-            except requests.RequestException:
-                return False
-
-        # Check if the device is connected to the internet
-        if not is_connected_to_internet():
-            colorlog.error("Device is not connected to the internet. Skipping sending .pcap files to Discord.")
-            return False
 
         try:
             # Iterate over each path
