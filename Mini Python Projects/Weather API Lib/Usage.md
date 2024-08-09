@@ -1,3 +1,5 @@
+## How to use
+
 To use this script, go to [openweatherapi signup page](https://home.openweathermap.org/users/sign_up) and create an account. 
 Then, copy and paste the API key into the `apiKey` field in the `api.json` file.
 
