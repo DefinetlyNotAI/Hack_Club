@@ -10,3 +10,4 @@ opencv-python~=4.10.0.84
 imutils~=0.5.4
 dlib~=19.24.5
 numpy~=1.26.4
+discord~=2.3.2

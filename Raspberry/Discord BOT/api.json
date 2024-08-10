@@ -1,0 +1,6 @@
+{
+  "token": "YOUR BOT TOKEN HERE",
+  "channel_id": 1234567890,
+  "webhooks_username": "YOUR WEBHOOK USERNAME",
+  "experimental": false
+}

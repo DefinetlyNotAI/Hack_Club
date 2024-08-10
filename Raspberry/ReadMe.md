@@ -9,6 +9,7 @@
 ### 🖥️ Prerequisites
 
 - Make sure Pwnagotchi is set up and running correctly without plugins.
+- If you are using linux, set experimental to true, else leave it false for windows as it will use wsl.
 
 ### 🚀 Steps
 1. Clone this repository or download the plugin script.
