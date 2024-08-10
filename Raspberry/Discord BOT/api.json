@@ -2,6 +2,7 @@
   "token": "YOUR BOT TOKEN HERE",
   "channel_id": 1234567890,
   "webhooks_username": "YOUR WEBHOOK USERNAME",
-  "should_we_crack": false,
-  "limit_of_messages_to_check": 1000
+  "should_we_crack_files?": false,
+  "limit_of_messages_to_check": 1000,
+  "log_using_debug?": true
 }
