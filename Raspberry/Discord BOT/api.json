@@ -2,5 +2,6 @@
   "token": "YOUR BOT TOKEN HERE",
   "channel_id": 1234567890,
   "webhooks_username": "YOUR WEBHOOK USERNAME",
-  "experimental": false
+  "should_we_crack": false,
+  "limit_of_messages_to_check": 1000
 }
