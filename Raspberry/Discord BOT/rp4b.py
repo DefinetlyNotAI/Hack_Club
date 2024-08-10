@@ -8,16 +8,17 @@ import requests
 from discord.ext import commands
 
 # TODO Make bot give a SEEN reaction, and also make bot only download .pcap's without the SEEN reaction,
-# TODO Make the perms in readme View Channel
+
+# TODO Update readme doc.
+# TODO Make the perms in readme
+# TODO View Channel
 # TODO Create Invite
 # TODO Read Message History
 # TODO REST IS OFF
 # TODO Add option to upload the file to github, etc
-# TODO Update readme doc.
 
 # Configure colorlog for logging messages with colors
 logger = colorlog.getLogger()
-logger.setLevel(colorlog.DEBUG)
 
 handler = colorlog.StreamHandler()
 formatter = colorlog.ColoredFormatter(
@@ -36,7 +37,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-# Function to read secret key from JSON file
+# Function to read secret keys and information from JSON file
 def read_key():
     """
     Reads secret keys from a JSON file.
@@ -44,17 +45,29 @@ def read_key():
     Returns:
         tuple: A tuple containing the token, channel ID, and webhooks username.
     """
-    with open('api.json', 'r') as f:
-        config = json.load(f)
-    return config['token'], config['channel_id'], config['webhooks_username'], config['should_we_crack'], config[
-        'limit_of_messages_to_check']
+    try:
+        with open('api.json', 'r') as f:
+            config = json.load(f)
+        if config is not None and isinstance(config['token'], str) and isinstance(config['channel_id'], int) and isinstance(
+                config['webhooks_username'], str) and isinstance(config['should_we_crack_files?'], bool) and isinstance(
+                config['limit_of_messages_to_check'], int) and isinstance(config['log_using_debug?'], bool):
+            return config['token'], config['channel_id'], config['webhooks_username'], config['should_we_crack_files?'], config['limit_of_messages_to_check'], config['log_using_debug?']
+        else:
+            colorlog.critical("Invalid JSON file format")
+            exit(1)
+    except Exception as e:
+        colorlog.critical(f"Error reading JSON file: {e}")
+        exit(1)
 
 
-TOKEN, CHANNEL_ID, WEBHOOK_USERNAME, CRACK, LIMIT = read_key()
-global filename
-
+# All global variables, and required initializations are done here.
+TOKEN, CHANNEL_ID, WEBHOOK_USERNAME, CRACK, LIMIT, DEBUG = read_key()
+if DEBUG:
+    logger.setLevel(colorlog.DEBUG)
+else:
+    logger.setLevel(colorlog.INFO)
 intents = discord.Intents.default()
-bot = commands.Bot(command_prefix='!', intents=intents)
+bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
 
 @bot.event
@@ -110,22 +123,19 @@ async def check_old_messages(channel_id):
                                 with open("cracker.py", 'wb') as f:
                                     f.write(response.content)
                                 colorlog.info("Downloaded cracker.py")
-                        except Exception as e:
-                            colorlog.critical(f"Failed to download cracker.py: {e}")
-                            break
 
-                        if platform.system() == 'Windows':
-                            try:
-                                subprocess.run(['wsl', 'python', 'cracker.py', name], check=True)
-                                colorlog.info("Successfully executed cracker.py via WSL.")
-                            except Exception as e:
-                                colorlog.error(f"Failed to execute cracker.py via WSL: {e}")
-                        else:
-                            try:
-                                subprocess.run(['python', 'cracker.py', name], check=True)
-                                colorlog.info("Successfully executed cracker.py.")
-                            except Exception as e:
-                                colorlog.error(f"Failed to execute cracker.py: {e}")
+                            if platform.system() == 'Windows':
+                                colorlog.error(f"Windows is not supported for cracking. Please use Linux.")
+                                colorlog.warning(
+                                    f"You can skip this step by setting 'should_we_crack' to False in api.json.")
+                            else:
+                                try:
+                                    subprocess.run(['python', 'cracker.py', name], check=True)
+                                    colorlog.info("Successfully executed cracker.py.")
+                                except Exception as e:
+                                    colorlog.error(f"Failed to execute cracker.py: {e}")
+                        except Exception as e:
+                            colorlog.critical(f"Unexpected issue occurred: {e}")
 
 
 async def download_pcap_file(url, filename):
@@ -143,9 +153,8 @@ async def download_pcap_file(url, filename):
     with open(filename, 'wb') as f:
         f.write(response.content)
 
-while True:
-    try:
-        bot.run(TOKEN)
-    except Exception as e:
-        colorlog.error(e)
 
+try:
+    bot.run(TOKEN, log_handler=None)
+except Exception as e:
+    colorlog.error(e)

