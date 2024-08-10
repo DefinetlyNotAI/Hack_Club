@@ -1,11 +1,39 @@
 import json
-import time
-import discord
-import requests
+import os
 import platform
 import subprocess
-import os
+import colorlog
+import discord
+import requests
 from discord.ext import commands
+
+# TODO Make bot give a SEEN reaction, and also make bot only download .pcap's without the SEEN reaction,
+# TODO Make the perms in readme View Channel
+# TODO Create Invite
+# TODO Read Message History
+# TODO REST IS OFF
+# TODO Add option to upload the file to github, etc
+# TODO Update readme doc.
+
+# Configure colorlog for logging messages with colors
+logger = colorlog.getLogger()
+logger.setLevel(colorlog.DEBUG)
+
+handler = colorlog.StreamHandler()
+formatter = colorlog.ColoredFormatter(
+    "%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(message)s",
+    datefmt=None,
+    reset=True,
+    log_colors={
+        "DEBUG": "cyan",
+        "INFO": "green",
+        "WARNING": "yellow",
+        "ERROR": "red",
+        "CRITICAL": "red",
+    },
+)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 # Function to read secret key from JSON file
@@ -18,10 +46,12 @@ def read_key():
     """
     with open('api.json', 'r') as f:
         config = json.load(f)
-    return config['token'], config['channel_id'], config['webhooks_username'], config['experimental']
+    return config['token'], config['channel_id'], config['webhooks_username'], config['should_we_crack'], config[
+        'limit_of_messages_to_check']
 
 
-TOKEN, CHANNEL_ID, WEBHOOK_USERNAME, experimental = read_key()
+TOKEN, CHANNEL_ID, WEBHOOK_USERNAME, CRACK, LIMIT = read_key()
+global filename
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix='!', intents=intents)
@@ -39,7 +69,7 @@ async def on_ready():
     Returns:
         None
     """
-    print(f'We have logged in as {bot.user}')
+    colorlog.info(f'We have logged in as {bot.user}')
     # Assuming you want to check messages in a specific channel ID
     channel_id = CHANNEL_ID  # Replace with your actual channel ID
     await check_old_messages(channel_id)
@@ -57,37 +87,45 @@ async def check_old_messages(channel_id):
     """
     channel = bot.get_channel(channel_id)
     if channel is None:
-        print(f"Channel with ID {channel_id} not found.")
+        colorlog.error(f"Channel with ID {channel_id} not found.")
         return
 
-    async for message in channel.history(limit=100):  # Adjust limit as needed
+    async for message in channel.history(limit=LIMIT):  # Adjust limit as needed
         if message.author.name == WEBHOOK_USERNAME:
             for attachment in message.attachments:
                 if attachment.filename.endswith('.pcap'):
-                    await download_pcap_file(attachment.url, attachment.filename)
-                    print(f'Downloaded {attachment.filename} from {attachment.url}')
-                    # Attempt to run cracker.py using WSL on Windows
-                    if experimental:
+                    name = attachment.filename
+                    await download_pcap_file(attachment.url, name)
+                    colorlog.info(f'Downloaded {name} from {attachment.url}')
+
+                    # Attempt to run cracker.py using WSL on Windows or Python on Linux
+                    if CRACK:
+                        colorlog.info("Attempting to execute cracker.py...")
+                        try:
+                            # Check for cracker.py in the current directory and download if not found
+                            if not os.path.exists('cracker.py'):
+                                colorlog.debug("cracker.py not found locally. Downloading...")
+                                url = "https://raw.githubusercontent.com/DefinetlyNotAI/Hack_Club/main/Raspberry/Discord%20BOT/cracker.py"
+                                response = requests.get(url)
+                                with open("cracker.py", 'wb') as f:
+                                    f.write(response.content)
+                                colorlog.info("Downloaded cracker.py")
+                        except Exception as e:
+                            colorlog.critical(f"Failed to download cracker.py: {e}")
+                            break
+
                         if platform.system() == 'Windows':
                             try:
-                                # Check for cracker.py in the current directory and download if not found
-                                if not os.path.exists('cracker.py'):
-                                    print("cracker.py not found locally. Downloading...")
-                                    url = "https://raw.githubusercontent.com/DefinetlyNotAI/Hack_Club/main/Raspberry/Discord%20BOT/cracker.py"
-                                    response = requests.get(url)
-                                    with open("cracker.py", 'wb') as f:
-                                        f.write(response.content)
-                                    print("Downloaded cracker.py")
-                                subprocess.run(['wsl', 'python', 'cracker.py'], check=True)
-                                print("Successfully executed cracker.py via WSL.")
+                                subprocess.run(['wsl', 'python', 'cracker.py', name], check=True)
+                                colorlog.info("Successfully executed cracker.py via WSL.")
                             except Exception as e:
-                                print(f"Failed to execute cracker.py via WSL: {e}")
+                                colorlog.error(f"Failed to execute cracker.py via WSL: {e}")
                         else:
                             try:
-                                subprocess.run(['python', 'cracker.py'], check=True)
-                                print("Successfully executed cracker.py.")
+                                subprocess.run(['python', 'cracker.py', name], check=True)
+                                colorlog.info("Successfully executed cracker.py.")
                             except Exception as e:
-                                print(f"Failed to execute cracker.py: {e}")
+                                colorlog.error(f"Failed to execute cracker.py: {e}")
 
 
 async def download_pcap_file(url, filename):
@@ -105,11 +143,9 @@ async def download_pcap_file(url, filename):
     with open(filename, 'wb') as f:
         f.write(response.content)
 
-
 while True:
     try:
         bot.run(TOKEN)
     except Exception as e:
-        print(f"Error: {e}")
-    print("Waiting 1 minute before restarting server check...")
-    time.sleep(60)
+        colorlog.error(e)
+
