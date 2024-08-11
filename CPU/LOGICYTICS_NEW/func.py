@@ -8,8 +8,8 @@ import subprocess
 
 class SystemInfo:
     def __init__(self):
-        self.source_path = r'C:/Windows/System32/winevt/Logs/System.evtx'
-        self.destination_path = os.path.join(os.getcwd(), 'SystemCopy.evtx')
+        self.source_path = r"C:/Windows/System32/winevt/Logs/System.evtx"
+        self.destination_path = os.path.join(os.getcwd(), "SystemCopy.evtx")
 
     @staticmethod
     def ram():
@@ -22,9 +22,13 @@ class SystemInfo:
 
     def system_logs(self):
         os.makedirs(os.path.dirname(self.destination_path), exist_ok=True)
-        with open(self.source_path, 'rb') as src_file, open(self.destination_path, 'wb') as dst_file:
+        with open(self.source_path, "rb") as src_file, open(
+            self.destination_path, "wb"
+        ) as dst_file:
             file_size = os.path.getsize(self.source_path)
-            progress_bar = tqdm(total=file_size, unit='B', unit_scale=True, desc="Copying System Log")
+            progress_bar = tqdm(
+                total=file_size, unit="B", unit_scale=True, desc="Copying System Log"
+            )
             chunk_size = 4096
             while True:
                 chunk = src_file.read(chunk_size)
@@ -50,7 +54,12 @@ class SystemInfo:
     @staticmethod
     def age():
         try:
-            bios_date = subprocess.check_output("wmic bios get serialnumber", shell=True).decode('utf-8').split(":")[1].strip()
+            bios_date = (
+                subprocess.check_output("wmic bios get serialnumber", shell=True)
+                .decode("utf-8")
+                .split(":")[1]
+                .strip()
+            )
             return f"System Age: {bios_date}"
         except IndexError:
             return "System Age: Unable to determine."
@@ -65,7 +74,9 @@ class SystemInfo:
     def win_data():
         try:
             ps_command = 'Get-WmiObject -query "SELECT * FROM SoftwareLicensingService"'
-            output = subprocess.run(['powershell', '-Command', ps_command], capture_output=True, text=True)
+            output = subprocess.run(
+                ["powershell", "-Command", ps_command], capture_output=True, text=True
+            )
             if output.returncode == 0:
                 return output.stdout.strip()
             else:
@@ -76,10 +87,10 @@ class SystemInfo:
     @staticmethod
     def __list_wifi_profiles():
         try:
-            output = subprocess.check_output('netsh wlan show profiles', shell=True)
-            lines = output.decode('utf-8').split('\n')
+            output = subprocess.check_output("netsh wlan show profiles", shell=True)
+            lines = output.decode("utf-8").split("\n")
             profile_lines = [line for line in lines if "All User Profile" in line]
-            profile_names = [line.split(':')[1].strip() for line in profile_lines]
+            profile_names = [line.split(":")[1].strip() for line in profile_lines]
             return profile_names
         except Exception as e:
             return "Error listing Wi-Fi profiles: " + str(e)
@@ -88,11 +99,14 @@ class SystemInfo:
     def __get_wifi_profile_details(profile_name):
         try:
             escaped_profile_name = f'"{profile_name}"'
-            output = subprocess.check_output(f'netsh wlan show profile name={escaped_profile_name} key=clear', shell=True)
+            output = subprocess.check_output(
+                f"netsh wlan show profile name={escaped_profile_name} key=clear",
+                shell=True,
+            )
             try:
-                lines = output.decode('latin-1').split('\n')
+                lines = output.decode("latin-1").split("\n")
             except UnicodeDecodeError:
-                lines = output.decode('utf-8').split('\n')
+                lines = output.decode("utf-8").split("\n")
             for line in lines:
                 if "Key Content" in line:
                     password_line = line.split(":")
@@ -101,7 +115,9 @@ class SystemInfo:
                         return f"{profile_name}: {password}"
             return f"Password not found for '{profile_name}'."
         except Exception as e:
-            return f"Error retrieving Wi-Fi profile details for '{profile_name}': {str(e)}"
+            return (
+                f"Error retrieving Wi-Fi profile details for '{profile_name}': {str(e)}"
+            )
 
     def wifi(self):
         profiles = self.__list_wifi_profiles()

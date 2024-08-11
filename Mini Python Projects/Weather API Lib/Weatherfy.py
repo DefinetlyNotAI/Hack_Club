@@ -38,12 +38,12 @@ class Obtain:
         - str: The API key read from the file.
         """
         try:
-            with open(file_path, 'r') as file:
+            with open(file_path, "r") as file:
                 config_data = json.load(file)
                 colorlog.debug(f"API Key successfully read from {file_path}.")
                 # Convert the dictionary to a string representation before logging
                 colorlog.debug("File Contents: " + json.dumps(config_data))
-                API = config_data.get('apiKey', None)
+                API = config_data.get("apiKey", None)
                 colorlog.debug(f"API Key: {API}")
                 return API
         except FileNotFoundError:
@@ -70,21 +70,19 @@ class Obtain:
             Exception: If an unexpected error occurs during the execution of the function.
         """
         try:
-            api_key = self.__get_api_key_from_json('api.json')
+            api_key = self.__get_api_key_from_json("api.json")
             if api_key is None:
                 colorlog.error("Failed to retrieve API key.")
                 return None
 
             # Get current GPS coordinates
-            location = geocoder.ip('me')
+            location = geocoder.ip("me")
             if location.latlng is None:
                 colorlog.error("Unable to retrieve GPS coordinates.")
                 return None
 
             latitude, longitude = location.latlng
-            location_info = {
-                "location": f"{latitude}, {longitude}"
-            }
+            location_info = {"location": f"{latitude}, {longitude}"}
             colorlog.debug(f"Latitude: {latitude}, Longitude: {longitude}")
 
             # Corrected base URL to include the version number
@@ -92,7 +90,7 @@ class Obtain:
             params = {
                 "q": "London,uk",  # Example city; replace with dynamic input if needed
                 "appid": api_key,
-                "units": "metric"
+                "units": "metric",
             }
             try:
                 response = requests.get(base_url, params=params)
@@ -102,7 +100,7 @@ class Obtain:
                     "weather": weather_data["weather"][0]["description"],
                     "temperature": weather_data["main"]["temp"],
                     "pressure": weather_data["main"]["pressure"],
-                    "humidity": weather_data["main"]["humidity"]
+                    "humidity": weather_data["main"]["humidity"],
                 }
             except requests.exceptions.RequestException as e:
                 colorlog.error(f"Failed to fetch weather data: {e}")
@@ -126,7 +124,9 @@ class Obtain:
         # Example usage
         result = self.__get_location_and_weather()
         if result is None:
-            colorlog.error("An error occurred: While fetching weather data and the response was NULL.")
+            colorlog.error(
+                "An error occurred: While fetching weather data and the response was NULL."
+            )
             return False
         else:
             return str(result)

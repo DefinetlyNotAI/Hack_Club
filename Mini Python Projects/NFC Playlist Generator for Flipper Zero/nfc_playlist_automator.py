@@ -25,15 +25,17 @@ def generate_nfc_playlists(script_dir, output_name="NFC_Playlists.txt"):
     output_file = output_name
 
     # Open the output file in append mode
-    with open(output_file, 'a') as f:
+    with open(output_file, "a") as f:
         # Walk through all subdirectories and files starting from script_dir
         for root, dirs, files in os.walk(script_dir):
             for file in files:
                 # Check if the file extension is .nfc
-                if file.endswith('.nfc'):
+                if file.endswith(".nfc"):
                     # Construct the relative path from script_dir to the current file
                     try:
-                        relative_path = os.path.relpath(os.path.join(str(root), str(file)), str(script_dir))
+                        relative_path = os.path.relpath(
+                            os.path.join(str(root), str(file)), str(script_dir)
+                        )
                     except ValueError as e:
                         print(f"Error: {e}")
                         break
@@ -41,7 +43,7 @@ def generate_nfc_playlists(script_dir, output_name="NFC_Playlists.txt"):
                     nfc_playlist_path = f"/ext/nfc/{relative_path}"
 
                     # Write the modified path to the output file
-                    f.write(nfc_playlist_path + '\n')
+                    f.write(nfc_playlist_path + "\n")
 
 
 if __name__ == "__main__":
@@ -50,7 +52,12 @@ if __name__ == "__main__":
     print("Made for the Flipper Zero NFC Playlist Application.")
     print("Automates the generation of NFC playlists for Flipper Zero.")
     parser = argparse.ArgumentParser(description="Generate NFC playlists.")
-    parser.add_argument("--name", type=str, help="Specify the name of the output file.", default="NFC_Playlists.txt")
+    parser.add_argument(
+        "--name",
+        type=str,
+        help="Specify the name of the output file.",
+        default="NFC_Playlists.txt",
+    )
 
     # Parse arguments
     args = parser.parse_args()

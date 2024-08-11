@@ -38,7 +38,7 @@ def detect_and_draw_landmarks(image, loop):
     colorlog.debug(f"Detected {len(rects)} faces")
 
     try:
-        for (i, rect) in enumerate(rects):
+        for i, rect in enumerate(rects):
             colorlog.debug(f"Processing face {i + 1}")
             shape = predictor(gray, rect)
             shape = face_utils.shape_to_np(shape)
@@ -102,15 +102,17 @@ def capture():
             display_frame = detect_and_draw_landmarks(frame.copy(), loop)
 
             # Display the frame with dots
-            cv2.imshow('Face Detection', display_frame)
+            cv2.imshow("Face Detection", display_frame)
 
             key = cv2.waitKey(1) & 0xFF
             colorlog.info("Press 'c' to save the image.")
-            if key == ord('c'):  # Press 'c' to continue/save the image
-                files = os.listdir('known_faces')
-                number = sum([1 for f in files if os.path.isfile(os.path.join('known_faces', f))])
+            if key == ord("c"):  # Press 'c' to continue/save the image
+                files = os.listdir("known_faces")
+                number = sum(
+                    [1 for f in files if os.path.isfile(os.path.join("known_faces", f))]
+                )
                 # Save the original frame without modifications
-                cv2.imwrite(f'known_faces/face_{number}.jpg', frame)
+                cv2.imwrite(f"known_faces/face_{number}.jpg", frame)
                 colorlog.info("Image saved.")
 
                 break
@@ -125,8 +127,8 @@ def capture():
 
 # Initialize the camera
 try:
-    if not os.path.exists('known_faces'):
-        os.makedirs('known_faces')
+    if not os.path.exists("known_faces"):
+        os.makedirs("known_faces")
     cap = cv2.VideoCapture(0)
     capture()
     cap.release()

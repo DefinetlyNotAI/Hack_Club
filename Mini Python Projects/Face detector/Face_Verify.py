@@ -98,10 +98,14 @@ def compare_faces_with_temp(captured_image_path, known_faces_dir):
     colorlog.debug("Comparing faces...")
     try:
         threshold = 0.3  # Adjust this value based on testing
-        matches = face_recognition.compare_faces(known_face_encodings, captured_face_encoding_np, tolerance=threshold)
+        matches = face_recognition.compare_faces(
+            known_face_encodings, captured_face_encoding_np, tolerance=threshold
+        )
         if True in matches:
             colorlog.debug("Calculating facial distances...")
-            face_distances = face_recognition.face_distance(known_face_encodings, captured_face_encoding_np)
+            face_distances = face_recognition.face_distance(
+                known_face_encodings, captured_face_encoding_np
+            )
 
             # Find the index of the best match
             min_index = np.argmin(face_distances)
@@ -110,13 +114,17 @@ def compare_faces_with_temp(captured_image_path, known_faces_dir):
             for i in range(len(known_face_names)):
                 # Calculate the similarity score for the current known face
                 current_similarity_score = 1 / (
-                            face_distances[i] + 1)  # Inverting the distance to get a similarity score
+                    face_distances[i] + 1
+                )  # Inverting the distance to get a similarity score
 
-                colorlog.debug(f"{known_face_names[i]} has a similarity score of {current_similarity_score * 100:.2f}%")
+                colorlog.debug(
+                    f"{known_face_names[i]} has a similarity score of {current_similarity_score * 100:.2f}%"
+                )
 
             # Report the best match with its similarity score
             colorlog.info(
-                f"The best match ({known_face_names[min_index]}) has a similarity score of {current_similarity_score * 100:.2f}%")
+                f"The best match ({known_face_names[min_index]}) has a similarity score of {current_similarity_score * 100:.2f}%"
+            )
             return True
         else:
             colorlog.warning("No match found.")
@@ -127,9 +135,9 @@ def compare_faces_with_temp(captured_image_path, known_faces_dir):
 
 
 if __name__ == "__main__":
-    if not os.path.exists('known_faces'):
-        os.makedirs('known_faces')
+    if not os.path.exists("known_faces"):
+        os.makedirs("known_faces")
     colorlog.info("Starting face verification...")
     temp_captured_image_path = capture_and_save_temp_face()
     if temp_captured_image_path is not None:
-        compare_faces_with_temp(temp_captured_image_path, 'known_faces')
+        compare_faces_with_temp(temp_captured_image_path, "known_faces")

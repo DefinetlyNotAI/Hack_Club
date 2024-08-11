@@ -18,12 +18,12 @@ class Auto:
             :return: Dictionary with email and password.
             """
             try:
-                with open("Credentials.json", 'r') as file:
+                with open("Credentials.json", "r") as file:
                     data = json.load(file)
                     return {
                         "email": data.get("email"),
                         "password": data.get("password"),
-                        "domain": data.get("domain")
+                        "domain": data.get("domain"),
                     }
             except FileNotFoundError:
                 print(f"The JSON file does not exist.")
@@ -35,17 +35,17 @@ class Auto:
         credentials = __read_email_credentials()
         if not credentials:
             raise FileNotFoundError("Credentials.json does not exist.")
-        elif len(credentials['email']) == 0 or len(credentials['password']) == 0:
+        elif len(credentials["email"]) == 0 or len(credentials["password"]) == 0:
             raise ValueError("Email and password are required.")
-        if credentials['domain'] == 'outlook':
-            self.smtp_server = 'smtp.office365.com'
-        elif credentials['domain'] == 'gmail':
-            self.smtp_server = 'smtp.gmail.com'
+        if credentials["domain"] == "outlook":
+            self.smtp_server = "smtp.office365.com"
+        elif credentials["domain"] == "gmail":
+            self.smtp_server = "smtp.gmail.com"
         else:
             raise ValueError(f"Invalid domain given: {credentials['domain']}")
         self.port = port
-        self.username = credentials['email']
-        self.password = credentials['password']
+        self.username = credentials["email"]
+        self.password = credentials["password"]
 
     def send_email(self, recipient, subject, body):
         """
@@ -57,9 +57,9 @@ class Auto:
         """
         # Create the email message
         msg = MIMEText(body)
-        msg['Subject'] = subject
-        msg['From'] = self.username
-        msg['To'] = recipient
+        msg["Subject"] = subject
+        msg["From"] = self.username
+        msg["To"] = recipient
 
         # Connect to the SMTP server
         server = smtplib.SMTP(self.smtp_server, self.port)

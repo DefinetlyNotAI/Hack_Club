@@ -29,10 +29,10 @@ logger.addHandler(handler)
 
 
 class AutoPcap(plugins.Plugin):
-    __author__ = 'Shahm Najeeb (DefinetlyNotAI)'
-    __version__ = '1.0.0'
-    __license__ = 'MIT'
-    __description__ = 'Gets ALL PCAP files and uploads them to Discord via a webhook plugin, this can be used for automation.'
+    __author__ = "Shahm Najeeb (DefinetlyNotAI)"
+    __version__ = "1.0.0"
+    __license__ = "MIT"
+    __description__ = "Gets ALL PCAP files and uploads them to Discord via a webhook plugin, this can be used for automation."
 
     class Log:
         def __init__(self, filename="Server.log", max_size=None):
@@ -163,7 +163,7 @@ class AutoPcap(plugins.Plugin):
         global tether
         tether = False
         self.running = True
-        colorlog.info('AutoPcap plugin loaded and ready to run.')
+        colorlog.info("AutoPcap plugin loaded and ready to run.")
 
     def on_epoch(self, agent, epoch, epoch_data):
         """
@@ -183,17 +183,27 @@ class AutoPcap(plugins.Plugin):
             try:
                 link = self.__read_webhook_url()
                 if link is None:
-                    colorlog.critical("No webhook URL found in config.json. Skipping sending pcap file to Discord.")
-                    self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).critical("No webhook URL found in config.json. Skipping sending pcap file to Discord.")
+                    colorlog.critical(
+                        "No webhook URL found in config.json. Skipping sending pcap file to Discord."
+                    )
+                    self.Log(
+                        filename="Pwngotchi_Plugin_Errors.log", max_size=1000
+                    ).critical(
+                        "No webhook URL found in config.json. Skipping sending pcap file to Discord."
+                    )
                 else:
                     if tether:
                         self.__send_pcap_files_to_discord(link)
                         colorlog.info("Successfully sent pcap file to Discord.")
                     else:
-                        colorlog.error("Device is not connected to the internet. Skipping sending .pcap files to Discord.")
+                        colorlog.error(
+                            "Device is not connected to the internet. Skipping sending .pcap files to Discord."
+                        )
             except Exception as e:
                 colorlog.error(f"Error sending pcap file to Discord: {e}")
-                self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).error(f"Error sending pcap file to Discord: {e}")
+                self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).error(
+                    f"Error sending pcap file to Discord: {e}"
+                )
 
     def __read_webhook_url(self):
         """
@@ -210,12 +220,14 @@ class AutoPcap(plugins.Plugin):
             FileNotFoundError: If the 'config.json' file is not found.
         """
         try:
-            with open('config.json', 'r') as file:
+            with open("config.json", "r") as file:
                 data = json.load(file)
-                return data['webhookUrl']
+                return data["webhookUrl"]
         except FileNotFoundError as e:
             colorlog.critical(f"Error reading config.json: {e}")
-            self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).critical(f"Error reading config.json: {e}")
+            self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).critical(
+                f"Error reading config.json: {e}"
+            )
             return None
 
     def __send_pcap_files_to_discord(self, webhook_url):
@@ -242,12 +254,14 @@ class AutoPcap(plugins.Plugin):
         """
         # Define the paths to search
         paths_to_search = [
-            '.',  # Current Dir
-            '/root/handshakes/'  # Specific directory for pwngotchi handshakes (pcap)
+            ".",  # Current Dir
+            "/root/handshakes/",  # Specific directory for pwngotchi handshakes (pcap)
         ]
 
         # Debug print: Starting the search for .pcap files
-        colorlog.info("Starting search for .pcap files and attempting to send them to Discord via webhook...")
+        colorlog.info(
+            "Starting search for .pcap files and attempting to send them to Discord via webhook..."
+        )
 
         try:
             # Iterate over each path
@@ -257,40 +271,61 @@ class AutoPcap(plugins.Plugin):
                 # Search for .pcap files in the current path
                 for root, dirs, files in os.walk(path):
                     for file in files:
-                        if file.endswith('.pcap'):
+                        if file.endswith(".pcap"):
                             file_path = os.path.join(root, file)
                             colorlog.debug(f"Found .pcap file: {file_path}")
 
                             # Debug print: Attempting to send the .pcap file to Discord
-                            colorlog.debug(f"Attempting to send {file_path} to Discord...")
+                            colorlog.debug(
+                                f"Attempting to send {file_path} to Discord..."
+                            )
 
                             # Step 4: Send the .pcap file to Discord
-                            with open(file_path, 'rb') as f:
+                            with open(file_path, "rb") as f:
                                 content = f.read()
                                 # Adjusted to use 'files' parameter directly without specifying 'Content-Type'
                                 response = requests.post(
-                                    webhook_url,
-                                    files={'file': ('file.pcap', content)}
+                                    webhook_url, files={"file": ("file.pcap", content)}
                                 )
 
                                 # Debug print: Response status code
-                                colorlog.debug(f"Response status code: {response.status_code}")
+                                colorlog.debug(
+                                    f"Response status code: {response.status_code}"
+                                )
 
-                                if response.status_code == 204 or response.status_code == 200:
-                                    colorlog.info(f"Successfully sent {file_path} to Discord.")
+                                if (
+                                    response.status_code == 204
+                                    or response.status_code == 200
+                                ):
+                                    colorlog.info(
+                                        f"Successfully sent {file_path} to Discord."
+                                    )
                                 else:
                                     colorlog.error(
-                                        f"Failed to send {file_path} to Discord. Status Code: {response.status_code}")
-                                    self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).error(f"Failed to send {file_path} to Discord. Status Code: {response.status_code}")
+                                        f"Failed to send {file_path} to Discord. Status Code: {response.status_code}"
+                                    )
+                                    self.Log(
+                                        filename="Pwngotchi_Plugin_Errors.log",
+                                        max_size=1000,
+                                    ).error(
+                                        f"Failed to send {file_path} to Discord. Status Code: {response.status_code}"
+                                    )
                                 colorlog.debug(f"Response text: {response.text}")
-                                self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).info("Returned from Discord: " + response.text)
+                                self.Log(
+                                    filename="Pwngotchi_Plugin_Errors.log",
+                                    max_size=1000,
+                                ).info("Returned from Discord: " + response.text)
 
         except FileNotFoundError as e:
             colorlog.error(f"Error reading .pcap files: {e}")
-            self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).error(f"Error reading .pcap files: {e}")
+            self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).error(
+                f"Error reading .pcap files: {e}"
+            )
             return False
         except Exception as e:
             colorlog.error(f"Error sending .pcap files to Discord: {e}")
-            self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).error(f"Error sending .pcap files to Discord: {e}")
+            self.Log(filename="Pwngotchi_Plugin_Errors.log", max_size=1000).error(
+                f"Error sending .pcap files to Discord: {e}"
+            )
             return False
         return True

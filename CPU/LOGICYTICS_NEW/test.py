@@ -7,10 +7,10 @@ def copy_logs_to_same_dir():
     script_dir = Path(__file__).resolve().parent
 
     # Define the source path
-    source_path = Path(r'C:\Windows\System32\winevt\Logs')
+    source_path = Path(r"C:\Windows\System32\winevt\Logs")
 
     # Define the destination path as a subdirectory named 'LogBackup' in the script's directory
-    destination_path = script_dir / 'LogBackup'
+    destination_path = script_dir / "LogBackup"
 
     try:
         # Ensure the destination directory exists
@@ -18,7 +18,7 @@ def copy_logs_to_same_dir():
             destination_path.mkdir(parents=True, exist_ok=True)
 
         # Iterate through each file in the source directory
-        for file_path in source_path.glob('*.evtx'):
+        for file_path in source_path.glob("*.evtx"):
             # Extract just the filename from the full path
             file_name = file_path.name
             source_file = file_path
@@ -27,7 +27,9 @@ def copy_logs_to_same_dir():
             # Remove the destination file if it already exists
             if destination_file.exists():
                 print(f"Overwriting {file_name} in the destination.")
-                destination_file.unlink(missing_ok=True)  # Safely remove the file if it exists
+                destination_file.unlink(
+                    missing_ok=True
+                )  # Safely remove the file if it exists
 
             # Copy the file to the destination directory
             shutil.copy(source_file, destination_file)
