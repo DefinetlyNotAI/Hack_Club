@@ -30,24 +30,23 @@ from datetime import datetime
 
 
 class Log:
-    def __init__(self, filename="Server.log", max_size=None):
+    def __init__(self, filename="Server.log"):
         """
         Initializes a new instance of the Log class.
 
         Args:
             filename (str, optional): The name of the log file. Defaults to "Server.log".
-            max_size (int, optional): The maximum size of the log file in bytes. Defaults to infinity.
 
         Initializes the `filename` and `size` attributes of the Log instance.
         If the log file does not exist, it creates an empty file with the specified name.
         """
         # Use the provided filename or default to 'Server.log'
         self.filename = str(filename)
-        self.size = int(max_size)
 
         # Check if the file exists and create it if it doesn't
         if not os.path.exists(self.filename):
-            with open(self.filename, "w"):
+            with open(self.filename, "w") as log_file:
+                log_file.write("|-----Timestamp-----|--Log Level--|-----------------------------------------------------------------------Log Messages-----------------------------------------------------------------------|\n")
                 pass  # Empty file content is fine here since we append logs
 
     @staticmethod
@@ -66,23 +65,6 @@ class Log:
 
         return time
 
-    def __remove(self):
-        """
-        Remove the log file if it exists and the number of lines in the file exceeds the specified size.
-
-        This function checks if the log file specified by the `filename` attribute exists. If it does, it opens the file in read mode and counts the number of lines in the file. If the number of lines is greater than the specified `size`, the file is removed.
-
-        Returns:
-            None
-        """
-        if os.path.exists(self.filename) and self.size is not None:
-            with open(self.filename, "r") as file:
-                line_count = sum(1 for _ in file)
-            if line_count > self.size:
-                os.remove(self.filename)
-            with open(self.filename, "w"):
-                pass  # Empty file content is fine here since we append logs
-
     def info(self, message):
         """
         Writes an information log message to the log file.
@@ -93,9 +75,8 @@ class Log:
         Returns:
             None
         """
-        self.__remove()
         with open(self.filename, "a") as f:
-            f.write(f"[{self.__timestamp()}] > INFO:     {message}\n")
+            f.write(f"[{self.__timestamp()}] > INFO:       {message}\n")
 
     def warning(self, message):
         """
@@ -107,9 +88,8 @@ class Log:
         Returns:
             None
         """
-        self.__remove()
         with open(self.filename, "a") as f:
-            f.write(f"[{self.__timestamp()}] > WARNING:  {message}\n")
+            f.write(f"[{self.__timestamp()}] > WARNING:    {message}\n")
 
     def error(self, message):
         """
@@ -121,9 +101,8 @@ class Log:
         Returns:
             None
         """
-        self.__remove()
         with open(self.filename, "a") as f:
-            f.write(f"[{self.__timestamp()}] > ERROR:    {message}\n")
+            f.write(f"[{self.__timestamp()}] > ERROR:      {message}\n")
 
     def critical(self, message):
         """
@@ -135,13 +114,12 @@ class Log:
         Returns:
             None
         """
-        self.__remove()
         with open(self.filename, "a") as f:
-            f.write(f"[{self.__timestamp()}] > CRITICAL: {message}\n")
+            f.write(f"[{self.__timestamp()}] > CRITICAL:   {message}\n")
 
 
 # Configure colorlog for logging messages with colors
-log = Log(filename="Discord.log", max_size=2500)
+log = Log(filename="Discord.log")
 logger = colorlog.getLogger()
 
 handler = colorlog.StreamHandler()
@@ -214,20 +192,6 @@ intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 
-@bot.command(name="logs", help="Sends the Discord.log file to the chat.")
-# TODO FIX this
-async def send_logs(ctx):
-    # Ensure the file exists before attempting to read it
-    if os.path.exists("Discord.log"):
-        with open("Discord.log", "r") as file:
-            log_contents = file.read()
-
-        # Send the contents of the log file to the chat
-        await ctx.send(log_contents)
-    else:
-        await ctx.send("The Discord.log file does not exist yet.")
-
-
 @bot.event
 async def on_ready():
     """
@@ -249,7 +213,7 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     """
-    Event handler triggered when a message is received.
+    Event handler triggered when a message is received, with checks of the author.
 
     Parameters:
         message (discord.Message): The message object containing information about the message.
@@ -258,8 +222,45 @@ async def on_message(message):
         None
     """
     colorlog.info(f"Message from {message.author}: {message.content}")
+    log.info(f"Message from {message.author}: {message.content}")
+
     channel_id = CHANNEL_ID
-    await extract_and_decrypt(channel_id)
+    if message == "/logs":
+        colorlog.info("Uploading logs...")
+        await upload_file(message)
+    elif message.author == WEBHOOK_USERNAME:
+        await extract_and_decrypt(channel_id)
+    else:
+        colorlog.info(f"Message Ignored due to {message.author} not being {WEBHOOK_USERNAME}")
+        log.info(f"Message Ignored due to {message.author} not being {WEBHOOK_USERNAME}")
+
+
+async def upload_file(ctx, *, message: str = "Here are the logs 🤗"):
+    """
+    Uploads a file to a specified Discord channel.
+
+    Args:
+        ctx: Context object passed by discord.py.
+        message: An optional message to accompany the file upload.
+    """
+    # Retrieve the channel object using the provided channel ID
+    channel = bot.get_channel(CHANNEL_ID)
+    if channel is None:
+        await ctx.send("Channel not found.")
+        return
+
+    # Open the file in binary mode and read its content into memory
+    with open("Discord.log", "rb") as file:
+        file_content = file.read()
+
+    # Create a Discord File object with the file content
+    fileToSend = discord.File(file_content, filename="Discord.log")
+
+    # Optionally, send a message with the file
+    if message:
+        await channel.send(f"{message}\n{fileToSend}")
+    else:
+        await channel.send(file=fileToSend)
 
 
 async def extract_and_decrypt(channel_id):
@@ -336,9 +337,6 @@ async def extract_and_decrypt(channel_id):
                                 colorlog.error(
                                     f"Windows is not supported for cracking. Please use Linux."
                                 )
-                                colorlog.warning(
-                                    f"You can skip this step by setting 'should_we_crack' to False in api.json."
-                                )
                                 log.error(
                                     f"Windows attempted to be used for cracking. Failed"
                                 )
@@ -414,6 +412,7 @@ async def extract_and_decrypt(channel_id):
                                                 colorlog.info(
                                                     "Crack Status: Converting file format..."
                                                 )
+                                                log.info("Converting pcapng file...")
                                                 os.system(
                                                     "editcap -F pcap '"
                                                     + filename
@@ -437,6 +436,9 @@ async def extract_and_decrypt(channel_id):
                                                 os.rename("Fixerror.pcap", filename)
                                                 colorlog.info(
                                                     f"Crack Status: Fixing file errors for {filename}.."
+                                                )
+                                                log.info(
+                                                    f"Fixing file errors for {filename}..."
                                                 )
                                                 colorlog.debug(
                                                     "Original Renamed: Oldpcapfile.pcap"
@@ -465,6 +467,7 @@ async def extract_and_decrypt(channel_id):
                                                 return False
                                             else:
                                                 colorlog.info(f"Service Set Id: {ssid}")
+                                                log.info(f"Service Set Id Obtained")
 
                                             os.system(
                                                 "aircrack-ng -b "
@@ -480,6 +483,7 @@ async def extract_and_decrypt(channel_id):
                                             wep = open("WepKey.txt").readline().rstrip()
                                             os.remove("./WepKey.txt")
                                             colorlog.info("Wired Privacy Key : " + wep)
+                                            log.info("Wired Privacy Key Obtained")
 
                                             os.system(
                                                 "airdecap-ng -w "
@@ -519,6 +523,7 @@ async def extract_and_decrypt(channel_id):
                                                 colorlog.info(
                                                     f"Renamed Cracked File: {new_filename}"
                                                 )
+                                            log.info("Cracked File Renamed")
                                             return True
                                         except Exception as e:
                                             colorlog.error(e)
