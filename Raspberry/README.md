@@ -1,4 +1,5 @@
 # AutoPCAP Project
+
 ## Table of Contents
 - [Introduction](#-introduction)
   - [Overview](#-overview)
@@ -16,6 +17,7 @@
 - [Usage](#-usage)
   - [Pwngotchi Usage](#-pwngotchi-usage)
   - [Discord Bot Usage](#-discord-bot-usage)
+- [Bot Reactions Glossary](#-bot-reaction-glossary)
 - [Troubleshooting and Support](#-troubleshooting-and-support)
   - [Pwngotchi Side Troubleshooting](#-pwngotchi-side-troubleshooting)
   - [Discord Bot Side Troubleshooting](#-discord-bot-side-troubleshooting)
@@ -24,11 +26,11 @@
     - [Discord Upload Fails](#-discord-upload-fails-both)
     - [Log File Issues](#-log-file-issues-both)
     - [Plugin Configuration Issues](#-plugin-configuration-issues-pwngotchi-side)
-- [Contributing](#-contributing)
 - [Frequently Asked Questions](#-frequently-asked-questions)
   - [Can I use multiple webhook URLs?](#-can-i-use-multiple-webhook-urls)
   - [How do I update the plugin?](#-how-do-i-update-the-plugin)
   - [Is there a way to filter `.pcap` files?](#-is-there-a-way-to-filter-pcap-files)
+- [Contributing](#-contributing)
 - [Support and Community](#-support-and-community)
 - [Donations](#-giving-back)
 - [License](#-license)
@@ -159,6 +161,42 @@ Ensure the bot is running in a Linux environment with sudo privileges.
 Users can interact with the bot by sending messages in the configured channels,
 triggering responses based on message content and settings.
 
+## ⚙️ Bot Reaction Glossary
+
+The bot will generate many types of reactions to respond to various messages that include the pcaps uploaded.
+As part of its job, if an error occurs a reaction will be generated, 
+and if a pcap has already been cracked, a different reaction will be generated.
+Here they are:-
+
+### ⛔ Reaction
+The bot is not running in a linux environment.
+
+### 👍 Reaction
+The bot successfully cracked and uploaded the pcap file.
+
+### 👎 Reaction
+The bot failed to crack the pcap file.
+
+### ❔ Reaction
+An unknown return occurred in cracking process
+
+### ❌ Reaction
+An error with python occurred, cracking failed
+
+### 🚫 Reaction
+An error occurred with discord, processing failed, usually relating to permissions, 
+this is an exception for HTTP errors
+
+### ⚠️ Reaction
+An unknown exception was caught, an error that handles the discord bot, occurs if the error
+is not related to HTTP errors
+
+### ⁉️ Reaction
+The whole script failed without any handling, this is unexpected and shouldn't happen
+
+### 👀 Reaction
+The bot is handling the pcap currently, will later give it a different reaction
+
 ## 🐛 Troubleshooting and Support
 
 ### 🛜 Pwngotchi Side Troubleshooting
@@ -194,13 +232,6 @@ Here are some common issues and solutions to help you get back on track:-
 - Ensure your `config.json` file is correctly formatted and contains a valid Discord webhook URL.
 - Verify that Pwngotchi is configured to use custom plugins.
 
-## 📈 Contributing
-
-Contributions are encouraged! Fork the repository, make changes, and submit pull requests.
-Contributions to improve functionality, security, and usability are welcomed.
-
-We would appreciate any contributions to the `crack` function.
-
 ## ❓ Frequently Asked Questions
 
 ### 📶 Can I use multiple webhook URLs?
@@ -214,6 +245,13 @@ We would appreciate any contributions to the `crack` function.
 ### ⚙️ Is there a way to filter `.pcap` files?
 
 - Customize the `on_handshake` function to filter `.pcap` files based on criteria such as file size, SSID, or timestamp.
+
+## 📈 Contributing
+
+Contributions are encouraged! Fork the repository, make changes, and submit pull requests.
+Contributions to improve functionality, security, and usability are welcomed.
+
+We would appreciate any contributions to the `crack` function.
 
 ## 📢 Support and Community
 
