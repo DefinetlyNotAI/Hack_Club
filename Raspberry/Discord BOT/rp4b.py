@@ -12,22 +12,8 @@ from io import BytesIO  # Import BytesIO at the beginning of your script
 from discord.ext import commands
 from datetime import datetime
 
-# TODO Update readme doc.
-#  MUST RUN BY SUDO
-#  They can modify the cracker function for their needs as it is not perfect.
-#  Include what is still expected (true false returns for error checks etc)(must make a CRACKED directory if not exist and store pcaps there, only generate pcaps)
-# TODO Make the perms in readme
-#  View Channels
-#  Read Message History
-#  Send Messages
-#  Manage Messages (for clearing reactions)
-#  Add Reactions
-#  Attach Files
-#  Create Invites
-#  Link is https://discord.com/oauth2/authorize?client_id=1271825033932832788&permissions=109632&integration_type=0&scope=bot
-# TODO also must explain the reaction symbol meanings
 
-
+# Log class
 class Log:
     def __init__(self, filename="Server.log"):
         """
@@ -46,7 +32,8 @@ class Log:
         if not os.path.exists(self.filename):
             with open(self.filename, "w") as log_file:
                 log_file.write(
-                    "|-----Timestamp-----|--Log Level--|-----------------------------------------------------------------------Log Messages-----------------------------------------------------------------------|\n")
+                    "|-----Timestamp-----|--Log Level--|-----------------------------------------------------------------------Log Messages-----------------------------------------------------------------------|\n"
+                )
                 pass  # Empty file content is fine here since we append logs
 
     @staticmethod
@@ -158,12 +145,12 @@ def read_key():
         with open("api.json", "r") as f:
             config = json.load(f)
         if (
-                config is not None
-                and isinstance(config["token"], str)
-                and isinstance(config["channel_id_(for_pcaps)"], int)
-                and isinstance(config["channel_id_(for_logs)"], int)
-                and isinstance(config["webhooks_username"], list)
-                and isinstance(config["log_using_debug?"], bool)
+            config is not None
+            and isinstance(config["token"], str)
+            and isinstance(config["channel_id_(for_pcaps)"], int)
+            and isinstance(config["channel_id_(for_logs)"], int)
+            and isinstance(config["webhooks_username"], list)
+            and isinstance(config["log_using_debug?"], bool)
         ):
             return (
                 config["token"],
@@ -223,31 +210,55 @@ async def on_message(message):
     """
     channel_pcaps = await message.guild.fetch_channel(CHANNEL_ID_PCAPS)
     channel_log = await message.guild.fetch_channel(CHANNEL_ID_LOGS)
-    if isinstance(channel_pcaps, discord.TextChannel) and isinstance(channel_log, discord.TextChannel):
+    if isinstance(channel_pcaps, discord.TextChannel) and isinstance(
+        channel_log, discord.TextChannel
+    ):
         colorlog.info(f"Message from {message.author}: {message.content}")
         log.info(f"Message from {message.author}: {message.content}")
         if message.content == "/logs":
-            if message.author == message.guild.owner or message.author.guild_permissions.administrator:
+            if (
+                message.author == message.guild.owner
+                or message.author.guild_permissions.administrator
+            ):
                 if message.channel.id == CHANNEL_ID_LOGS:
                     await logs(message.channel)
                 else:
-                    await message.channel.send("This is not the logs preconfigured channel. Please use the /logs command in the logs channel.")
-                    colorlog.warning(f"Channel {message.channel} is not the one preconfigured.")
-                    log.warning(f"Channel {message.channel} is not the one preconfigured.")
+                    await message.channel.send(
+                        "This is not the logs preconfigured channel. Please use the /logs command in the logs channel."
+                    )
+                    colorlog.warning(
+                        f"Channel {message.channel} is not the one preconfigured."
+                    )
+                    log.warning(
+                        f"Channel {message.channel} is not the one preconfigured."
+                    )
             else:
-                await message.channel.send("You do not have permission to use this command?")
-                colorlog.error(f"User {message.author} does not have permission to use this command.")
-                log.error(f"User {message.author} attempted to use the /logs command. Invalid permission's.")
+                await message.channel.send(
+                    "You do not have permission to use this command?"
+                )
+                colorlog.error(
+                    f"User {message.author} does not have permission to use this command."
+                )
+                log.error(
+                    f"User {message.author} attempted to use the /logs command. Invalid permission's."
+                )
         elif str(message.author) in WEBHOOK_USERNAME:
             colorlog.info("Extracting and decrypting pcaps...")
             await extract_and_decrypt(CHANNEL_ID_PCAPS)
         elif str(message.author) not in WEBHOOK_USERNAME and message.author != bot.user:
             colorlog.info(
-                f"Message Ignored due to {message.author} not being in the allowed list of users: {WEBHOOK_USERNAME}")
-            log.info(f"Message Ignored due to {message.author} not being in the allowed list of users: {WEBHOOK_USERNAME}")
+                f"Message Ignored due to {message.author} not being in the allowed list of users: {WEBHOOK_USERNAME}"
+            )
+            log.info(
+                f"Message Ignored due to {message.author} not being in the allowed list of users: {WEBHOOK_USERNAME}"
+            )
     else:
-        colorlog.critical(f"Channel {CHANNEL_ID_PCAPS} or {CHANNEL_ID_LOGS} not found as text channels.")
-        log.critical(f"Channel {CHANNEL_ID_PCAPS} or {CHANNEL_ID_LOGS} not found as text channels. Bot Crashed.")
+        colorlog.critical(
+            f"Channel {CHANNEL_ID_PCAPS} or {CHANNEL_ID_LOGS} not found as text channels."
+        )
+        log.critical(
+            f"Channel {CHANNEL_ID_PCAPS} or {CHANNEL_ID_LOGS} not found as text channels. Bot Crashed."
+        )
         exit(1)
 
 
@@ -330,8 +341,12 @@ async def extract_and_decrypt(channel_id):
             file_count += 1
             if attachment.filename.endswith(".pcap"):
                 if any(reaction.emoji == "👍" for reaction in message.reactions):
-                    colorlog.info(f"Seen reaction found. Skipping download for file code: [{file_count}].")
-                    log.info(f"Seen reaction found. Skipping download for file code: [{file_count}].")
+                    colorlog.info(
+                        f"Seen reaction found. Skipping download for file code: [{file_count}]."
+                    )
+                    log.info(
+                        f"Seen reaction found. Skipping download for file code: [{file_count}]."
+                    )
                     continue  # Skip this message if the Seen reaction is present
                 name = attachment.filename
                 await download_pcap_file(attachment.url, name)
@@ -372,14 +387,14 @@ async def extract_and_decrypt(channel_id):
 
                                 def crack(filename):
                                     """
-                                        Attempts to crack a pcap file using various tools and techniques.
+                                    Attempts to crack a pcap file using various tools and techniques.
 
-                                        Parameters:
-                                        filename (str): The name of the pcap file to crack.
+                                    Parameters:
+                                    filename (str): The name of the pcap file to crack.
 
-                                        Returns:
-                                        bool: True if the cracking process is successful, False otherwise.
-                                        """
+                                    Returns:
+                                    bool: True if the cracking process is successful, False otherwise.
+                                    """
                                     try:
                                         if os.geteuid() != 0:
                                             colorlog.critical(
@@ -406,11 +421,7 @@ async def extract_and_decrypt(channel_id):
                                         installed = True
 
                                         for check in checklist:
-                                            cmd = (
-                                                    "locate -i "
-                                                    + check
-                                                    + " > /dev/null"
-                                            )
+                                            cmd = "locate -i " + check + " > /dev/null"
                                             checked = os.system(cmd)
                                             if checked != 0:
                                                 colorlog.warning(
@@ -446,9 +457,7 @@ async def extract_and_decrypt(channel_id):
                                                 + "' > /dev/null"
                                             )
                                             filename = filename[:-2]
-                                            colorlog.debug(
-                                                "New Filename: " + filename
-                                            )
+                                            colorlog.debug("New Filename: " + filename)
 
                                         os.system(
                                             "pcapfix -d '"
@@ -471,9 +480,9 @@ async def extract_and_decrypt(channel_id):
 
                                         print("-" * 100)
                                         cmd = (
-                                                "tcpdump -ennr '"
-                                                + filename
-                                                + "' '(type mgt subtype beacon)' | awk '{print $13}' | sed 's/[()]//g;s/......//' | sort | uniq > SSID.txt"
+                                            "tcpdump -ennr '"
+                                            + filename
+                                            + "' '(type mgt subtype beacon)' | awk '{print $13}' | sed 's/[()]//g;s/......//' | sort | uniq > SSID.txt"
                                         )
                                         os.system(cmd)
                                         print("-" * 100)
@@ -525,9 +534,7 @@ async def extract_and_decrypt(channel_id):
                                         if not os.path.exists("CRACKED"):
                                             os.makedirs("CRACKED")
 
-                                        shutil.move(
-                                            filename2, f"CRACKED/{filename2}"
-                                        )
+                                        shutil.move(filename2, f"CRACKED/{filename2}")
 
                                         # Rename the file within the CRACKED directory to include the SSID
                                         new_filename = f"Cracked_{ssid}.pcap"
@@ -570,9 +577,7 @@ async def extract_and_decrypt(channel_id):
                                     colorlog.error(
                                         f"Crack Status: Failed to crack {name}"
                                     )
-                                    log.error(
-                                        f"Crack Status: Failed to crack {name}"
-                                    )
+                                    log.error(f"Crack Status: Failed to crack {name}")
                                     # Cracking has failed due to an error in the cracker function
                                     await message.add_reaction("👎")
                                 else:
