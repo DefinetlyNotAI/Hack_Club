@@ -46,10 +46,8 @@ class Log:
         """
         # Get the current date and time
         now = datetime.now()
-
         # Format the timestamp as a string
         time = f"{now.strftime('%Y-%m-%d %H:%M:%S')}"
-
         return time
 
     def info(self, message):
