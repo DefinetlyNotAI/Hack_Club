@@ -12,7 +12,6 @@ from io import BytesIO  # Import BytesIO at the beginning of your script
 from discord.ext import commands
 from datetime import datetime
 
-
 # TODO Update readme doc.
 #  MUST RUN BY SUDO
 #  They can modify the cracker function for their needs as it is not perfect.
@@ -161,13 +160,15 @@ def read_key():
         if (
                 config is not None
                 and isinstance(config["token"], str)
-                and isinstance(config["channel_id"], int)
+                and isinstance(config["channel_id_(for_pcaps)"], int)
+                and isinstance(config["channel_id_(for_logs)"], int)
                 and isinstance(config["webhooks_username"], list)
                 and isinstance(config["log_using_debug?"], bool)
         ):
             return (
                 config["token"],
-                config["channel_id"],
+                config["channel_id_(for_pcaps)"],
+                config["channel_id_(for_logs)"],
                 config["webhooks_username"],
                 config["log_using_debug?"],
             )
@@ -182,7 +183,7 @@ def read_key():
 
 
 # All global variables, and required initializations are done here.
-TOKEN, CHANNEL_ID, WEBHOOK_USERNAME, DEBUG = read_key()
+TOKEN, CHANNEL_ID_PCAPS, CHANNEL_ID_LOGS, WEBHOOK_USERNAME, DEBUG = read_key()
 if DEBUG:
     logger.setLevel(colorlog.DEBUG)
 else:
@@ -220,24 +221,48 @@ async def on_message(message):
     Returns:
         None
     """
-    colorlog.info(f"Message from {message.author}: {message.content}")
-    log.info(f"Message from {message.author}: {message.content}")
-
-    if message.content == "/logs":
-        colorlog.info("Uploading logs...")
-        await logs(message.channel)
-    elif str(message.author) in WEBHOOK_USERNAME:
-        colorlog.info("Extracting and decrypting pcaps...")
-        await extract_and_decrypt(CHANNEL_ID)
-    elif str(message.author) not in WEBHOOK_USERNAME and message.author != bot.user:
-        colorlog.info(
-            f"Message Ignored due to {message.author} not being in the allowed list of users: {WEBHOOK_USERNAME}")
-        log.info(f"Message Ignored due to {message.author} not being in the allowed list of users: {WEBHOOK_USERNAME}")
+    channel_pcaps = await message.guild.fetch_channel(CHANNEL_ID_PCAPS)
+    channel_log = await message.guild.fetch_channel(CHANNEL_ID_LOGS)
+    if isinstance(channel_pcaps, discord.TextChannel) and isinstance(channel_log, discord.TextChannel):
+        colorlog.info(f"Message from {message.author}: {message.content}")
+        log.info(f"Message from {message.author}: {message.content}")
+        if message.content == "/logs":
+            if message.author == message.guild.owner or message.author.guild_permissions.administrator:
+                if message.channel.id == CHANNEL_ID_LOGS:
+                    await logs(message.channel)
+                else:
+                    await message.channel.send("This is not the logs preconfigured channel. Please use the /logs command in the logs channel.")
+                    colorlog.warning(f"Channel {message.channel} is not the one preconfigured.")
+                    log.warning(f"Channel {message.channel} is not the one preconfigured.")
+            else:
+                await message.channel.send("You do not have permission to use this command?")
+                colorlog.error(f"User {message.author} does not have permission to use this command.")
+                log.error(f"User {message.author} attempted to use the /logs command. Invalid permission's.")
+        elif str(message.author) in WEBHOOK_USERNAME:
+            colorlog.info("Extracting and decrypting pcaps...")
+            await extract_and_decrypt(CHANNEL_ID_PCAPS)
+        elif str(message.author) not in WEBHOOK_USERNAME and message.author != bot.user:
+            colorlog.info(
+                f"Message Ignored due to {message.author} not being in the allowed list of users: {WEBHOOK_USERNAME}")
+            log.info(f"Message Ignored due to {message.author} not being in the allowed list of users: {WEBHOOK_USERNAME}")
+    else:
+        colorlog.critical(f"Channel {CHANNEL_ID_PCAPS} or {CHANNEL_ID_LOGS} not found as text channels.")
+        log.critical(f"Channel {CHANNEL_ID_PCAPS} or {CHANNEL_ID_LOGS} not found as text channels. Bot Crashed.")
+        exit(1)
 
 
 async def logs(ctx):
+    """
+    Retrieves and sends the Discord logs to a specified channel.
+
+    Parameters:
+    ctx (discord.ext.commands.Context): The context of the command invocation.
+
+    Returns:
+    None
+    """
     # Retrieve the channel object using the provided channel ID
-    channel = bot.get_channel(CHANNEL_ID)
+    channel = bot.get_channel(CHANNEL_ID_LOGS)
     if channel is None:
         await ctx.send("Channel not found.")
         return
