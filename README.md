@@ -11,19 +11,9 @@ that don't require or fit in their own repository. Enjoy!
     <a href="https://github.com/DefinetlyNotAI/Hack_Club/issues"><img src="https://img.shields.io/github/issues/DefinetlyNotAI/Hack_Club" alt="GitHub Issues"></a>
     <a href="https://github.com/DefinetlyNotAI/Hack_Club/graphs/commit-activity"><img src="https://img.shields.io/github/commit-activity/t/DefinetlyNotAI/Hack_Club" alt="GitHub Commit Activity"></a>
     <a href="https://github.com/DefinetlyNotAI/Hack_Club/languages"><img src="https://img.shields.io/github/languages/count/DefinetlyNotAI/Hack_Club" alt="GitHub Language Count"></a>
-    <a href="https://github.com/DefinetlyNotAI/Hack_Club/actions"><img src="https://img.shields.io/github/check-runs/DefinetlyNotAI/Hack_Club/main" alt="GitHub Branch Check Runs"></a>
     <a href="https://github.com/DefinetlyNotAI/Hack_Club"><img src="https://img.shields.io/github/repo-size/DefinetlyNotAI/Hack_Club" alt="GitHub Repo Size"></a>
+    <a href="https://codeclimate.com/github/DefinetlyNotAI/Hack_Club/maintainability"><img src="https://api.codeclimate.com/v1/badges/93ad84d09a938edb1702/maintainability" /></a>
 </div>
-
-## 📝 Table of Contents
-- [Overview](#-overview)
-- [Installation](#-installation)
-- [Configuration](#-configuration)
-- [Usage](#-usage)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Acknowledgments](#-acknowledgments)
-- [Additional Resources](#-additional-resources)
 
 ## 🎯 Overview
 🔗 This repository contains various projects developed during my time as a member of HackClub.
