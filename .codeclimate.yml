@@ -1,0 +1,47 @@
+exclude_patterns:
+- config/
+- db/
+- dist/
+- features/
+- **/node_modules/
+- script/
+- **/spec/
+- **/test/
+- **/tests/
+- Tests/
+- **/vendor/
+- **/*_test.go
+- **/*.d.ts
+- .github/
+- .idea/
+- .vscode/
+- .CPU
+- requirements.txt
+- LICENSE
+- .gitignore
+- .codeclimate.json
+- .gitattributes
+- .dockerfile
+- CODE_OF_CONDUCT.md
+- CONTRIBUTING.md
+- CREDITS.md
+- README.md
+- OnBoard/BOM.csv
+- OnBoard/CPL.csv
+- OnBoard/README.md
+- OnBoard/cart.png
+- OnBoard/gerber.zip
+- OnBoard/schematic.pdf
+- SECURITY.md
+- "Raspberry/Proof Of Concept (Images)/Raspberry/Pwngotchi Files/config.json"
+- "Raspberry/README.md"
+- "Mini Python Projects/Weather API Lib/api.json"
+- "Mini Python Projects/Email Automator/README.md"
+- "Mini Python Projects/Face detector/README.md"
+- "Mini Python Projects/Face detector/sp68fl.dat"
+- "Mini Python Projects/NFC Playlist Generator for Flipper Zero/README.md"
+- "Mini Python Projects/Weather API Lib/README.md"
+- "CPU/CPP PCB Pics/"
+- Raspberry/README.md
+- "Raspberry/Discord BOT/api.json"
+- "Raspberry/Discord BOT/test.pcap"
