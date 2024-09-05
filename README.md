@@ -2,10 +2,12 @@
 
 Hello, this is a repository designed for all my HackClub projects 
 that don't require or fit in their own repository. Enjoy!
+
 <br />
 <div align="center">
     ⚠️ Will be removed to custom repo's ⚠️
 </div>
+
 <br />
 <div align="center">
     <a href="https://github.com/DefinetlyNotAI/Hack_Club/issues"><img src="https://img.shields.io/github/issues/DefinetlyNotAI/Hack_Club" alt="GitHub Issues"></a>
