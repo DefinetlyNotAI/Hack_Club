@@ -3,7 +3,6 @@
 Hello, this is a repository designed for all my HackClub projects 
 that don't require or fit in their own repository. Enjoy!
 
-
 <br />
 <div align="center">
     ⚠️ Will be removed to custom repo's ⚠️
