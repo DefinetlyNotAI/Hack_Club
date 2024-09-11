@@ -5,11 +5,6 @@ that don't require or fit in their own repository. Enjoy!
 
 <br />
 <div align="center">
-    ⚠️ Will be removed to custom repo's ⚠️
-</div>
-
-<br />
-<div align="center">
     <a href="https://github.com/DefinetlyNotAI/Hack_Club/issues"><img src="https://img.shields.io/github/issues/DefinetlyNotAI/Hack_Club" alt="GitHub Issues"></a>
     <a href="https://github.com/DefinetlyNotAI/Hack_Club/graphs/commit-activity"><img src="https://img.shields.io/github/commit-activity/t/DefinetlyNotAI/Hack_Club" alt="GitHub Commit Activity"></a>
     <a href="https://github.com/DefinetlyNotAI/Hack_Club/languages"><img src="https://img.shields.io/github/languages/count/DefinetlyNotAI/Hack_Club" alt="GitHub Language Count"></a>
