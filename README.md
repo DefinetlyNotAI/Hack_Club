@@ -9,6 +9,7 @@ that don't require or fit in their own repository. Enjoy!
     <a href="https://github.com/DefinetlyNotAI/Hack_Club/graphs/commit-activity"><img src="https://img.shields.io/github/commit-activity/t/DefinetlyNotAI/Hack_Club" alt="GitHub Commit Activity"></a>
     <a href="https://github.com/DefinetlyNotAI/Hack_Club/languages"><img src="https://img.shields.io/github/languages/count/DefinetlyNotAI/Hack_Club" alt="GitHub Language Count"></a>
     <a href="https://github.com/DefinetlyNotAI/Hack_Club"><img src="https://img.shields.io/github/repo-size/DefinetlyNotAI/Hack_Club" alt="GitHub Repo Size"></a>
+    <a href="https://codeclimate.com/github/DefinetlyNotAI/Hack_Club/maintainability"><img src="https://api.codeclimate.com/v1/badges/829e3d14efcc934ac8ff/maintainability" /></a>
 </div>
 
 ## 🎯 Overview
