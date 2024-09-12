@@ -27,10 +27,8 @@ class Auto:
                     }
             except FileNotFoundError:
                 print(f"The JSON file does not exist.")
-                return None
             except json.JSONDecodeError:
                 print(f"There was an error decoding the JSON file.")
-                return None
 
         credentials = __read_email_credentials()
         if not credentials:

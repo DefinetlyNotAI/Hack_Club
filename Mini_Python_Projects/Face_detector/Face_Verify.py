@@ -52,7 +52,6 @@ def capture_and_save_temp_face():
         return temp_file_path
     else:
         colorlog.error("Failed to capture image.")
-        return None
 
 
 # Function to compare the captured face with known faces
@@ -78,10 +77,8 @@ def compare_faces_with_temp(captured_image_path, known_faces_dir):
         known_face_names = []
     except IndexError:
         colorlog.warning("No faces found in captured image.")
-        return None
     except Exception as e:
         colorlog.error(f"Error loading captured image: {e}")
-        return None
     colorlog.info("Loading known faces...")
     try:
         for filename in os.listdir(known_faces_dir):
@@ -93,7 +90,6 @@ def compare_faces_with_temp(captured_image_path, known_faces_dir):
                 known_face_names.append(filename)
     except Exception as e:
         colorlog.error(f"Error loading known faces: {e}")
-        return None
 
     colorlog.debug("Comparing faces...")
     try:
@@ -131,7 +127,6 @@ def compare_faces_with_temp(captured_image_path, known_faces_dir):
             return False
     except Exception as e:
         colorlog.error(f"Error comparing faces: {e}")
-        return None
 
 
 if __name__ == "__main__":

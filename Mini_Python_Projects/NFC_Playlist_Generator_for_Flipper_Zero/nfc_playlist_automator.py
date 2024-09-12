@@ -2,12 +2,12 @@ import os
 import argparse
 
 
-def generate_nfc_playlists(script_dir, output_name="NFC_Playlists.txt"):
+def generate_nfc_playlists(script_directory, output_name="NFC_Playlists.txt"):
     """
     Generate NFC playlists by walking through all subdirectories and files starting from the given script directory.
 
     Args:
-        script_dir (str): The directory to start walking from.
+        script_directory (str): The directory to start walking from.
         output_name (str, optional): The name of the output file. Defaults to "NFC_Playlists.txt".
 
     Returns:
@@ -26,15 +26,15 @@ def generate_nfc_playlists(script_dir, output_name="NFC_Playlists.txt"):
 
     # Open the output file in append mode
     with open(output_file, "a") as f:
-        # Walk through all subdirectories and files starting from script_dir
-        for root, dirs, files in os.walk(script_dir):
+        # Walk through all subdirectories and files starting from script_directory
+        for root, dirs, files in os.walk(script_directory):
             for file in files:
                 # Check if the file extension is .nfc
                 if file.endswith(".nfc"):
-                    # Construct the relative path from script_dir to the current file
+                    # Construct the relative path from script_directory to the current file
                     try:
                         relative_path = os.path.relpath(
-                            os.path.join(str(root), str(file)), str(script_dir)
+                            os.path.join(str(root), str(file)), str(script_directory)
                         )
                     except ValueError as e:
                         print(f"Error: {e}")
