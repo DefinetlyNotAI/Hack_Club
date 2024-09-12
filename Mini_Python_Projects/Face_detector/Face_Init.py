@@ -80,8 +80,8 @@ def detect_and_draw_landmarks(image, loop):
                 cv2.circle(image, tuple(point), 2, color, -1)
             for point in mouth:
                 cv2.circle(image, tuple(point), 2, color, -1)
-    except Exception as e:
-        colorlog.error(f"Error processing face: {e}")
+    except Exception as err:
+        colorlog.error(f"Error processing face: {err}")
 
     colorlog.debug(f"Finished detection and plotting - LOOP {loop}")
     return image.copy()

@@ -48,16 +48,12 @@ class Obtain:
                 return API
         except FileNotFoundError:
             colorlog.error(f"File {file_path} not found.")
-            return None
         except json.JSONDecodeError:
             colorlog.error(f"Unable to parse JSON in file {file_path}.")
-            return None
         except KeyError:
             colorlog.error(f"Key 'apiKey' not found in file {file_path}.")
-            return None
         except Exception as e:
             colorlog.error(f"An unexpected error occurred: {e}")
-            return None
 
     def __get_location_and_weather(self):
         """
@@ -73,13 +69,11 @@ class Obtain:
             api_key = self.__get_api_key_from_json("api.json")
             if api_key is None:
                 colorlog.error("Failed to retrieve API key.")
-                return None
 
             # Get current GPS coordinates
             location = geocoder.ip("me")
             if location.latlng is None:
                 colorlog.error("Unable to retrieve GPS coordinates.")
-                return None
 
             latitude, longitude = location.latlng
             location_info = {"location": f"{latitude}, {longitude}"}
@@ -104,14 +98,12 @@ class Obtain:
                 }
             except requests.exceptions.RequestException as e:
                 colorlog.error(f"Failed to fetch weather data: {e}")
-                return None
 
             # Combine location and weather info
             combined_info = {**location_info, **weather_info}
             return json.dumps(combined_info, indent=4)
         except Exception as e:
             colorlog.error(f"An error occurred: {e}")
-            return None
 
     def wal(self):
         """
@@ -127,7 +119,6 @@ class Obtain:
             colorlog.error(
                 "An error occurred: While fetching weather data and the response was NULL."
             )
-            return False
         else:
             return str(result)
 
